@@ -14,7 +14,7 @@ REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniprox
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.3.2"
+SCRIPT_VERSION="V_2.3.4"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -607,7 +607,7 @@ while true; do
     echo -e "${CYAN}10.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
     echo -e "${CYAN}11.${RESET} ${GREEN}启动/重启 系统DNS 并开机自启动${RESET}"
     echo -e "${CYAN}12.${RESET} ${GREEN}停止 系统DNS 并关闭开机自启${RESET}"
-    echo -e "${CYAN}12.${RESET} ${GREEN}检测脚本更新${RESET}"
+    echo -e "${CYAN}13.${RESET} ${GREEN}检测脚本更新${RESET}"
     echo -e "${CYAN}q.${RESET} ${RED}退出脚本${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
 
@@ -652,10 +652,10 @@ while true; do
     11)
         restore_system_dns
         ;;
-    11)
+    12)
         stop_system_dns
         ;;
-    12)
+    13)
         check_script_update
         ;;
     q)
