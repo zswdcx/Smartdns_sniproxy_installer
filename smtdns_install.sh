@@ -14,7 +14,7 @@ REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniprox
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.3.4"
+SCRIPT_VERSION="V_2.3.5"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -102,6 +102,8 @@ install_smartdns() {
         echo -e "${RED}[错误] SmartDNS 安装包下载失败，请检查网络连接！${RESET}"
         exit 1
     fi
+    
+    stop_system_dns
 
     tar zxf smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz
     cd smartdns || exit 1
