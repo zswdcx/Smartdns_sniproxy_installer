@@ -478,3 +478,16 @@ China_Media:
     - soku.com
     - youku.com
     - ykimg.com
+
+AI_Platform:
+  Openai:
+    - openai.com
+    - chatgpt.com
+    - oaistatic.com
+    - oaiusercontent.com
+  E-hentai:
+    - exhentai.org
+    - e-hentai.org
+  Claude 2:
+    - anthropic.com
+    - claude.ai
