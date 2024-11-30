@@ -14,7 +14,7 @@ REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniprox
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.3.7"
+SCRIPT_VERSION="V_2.3.8"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -257,28 +257,18 @@ echo -e "${CYAN}       配置文件路径：$CONFIG_FILE       ${RESET}"
 echo -e "${CYAN}       流媒体配置：$STREAM_CONFIG_FILE ${RESET}"
 echo -e "${BLUE}======================================${RESET}"
 echo -e "\n"
-# 查看一级流媒体平台列表
-view_streaming_platforms() {
-    if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
-        echo -e "${RED}[错误] 未找到 StreamConfig.yaml 文件，请检查路径：$STREAM_CONFIG_FILE${RESET}"
-        return
-    fi
+# # 查看一级流媒体平台列表
+# view_streaming_platforms() {
+#     if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
+#         echo -e "${RED}[错误] 未找到 StreamConfig.yaml 文件，请检查路径：$STREAM_CONFIG_FILE${RESET}"
+#         return
+#     fi
 
-    echo -e "${CYAN}流媒体平台列表:${RESET}"
-    yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl || echo -e "${YELLOW}暂无可用的流媒体平台配置。${RESET}"
-}
+#     echo -e "${CYAN}流媒体平台列表:${RESET}"
+#     yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl || echo -e "${YELLOW}暂无可用的流媒体平台配置。${RESET}"
+# }
 
-# 查看指定一级平台的二级流媒体
-view_nested_streaming_platforms() {
-    local platform_name="$1"
-    if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
-        echo -e "${RED}[错误] 未找到 StreamConfig.yaml 文件，请检查路径：$STREAM_CONFIG_FILE${RESET}"
-        return
-    fi
 
-    echo -e "${CYAN}以下是 $platform_name 的二级流媒体平台列表：${RESET}"
-    yq ".$platform_name | keys" "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl || echo -e "${YELLOW}该平台暂无配置的二级流媒体。${RESET}"
-}
 # 查看已添加的平台
 view_added_platforms() {
     echo -e "${CYAN}已添加的平台:${RESET}"
@@ -457,6 +447,13 @@ view_streaming_platforms() {
     fi
 }
 
+# 查看指定一级平台的二级流媒体
+view_nested_streaming_platforms() {
+    local platform_name="$1"
+    echo -e "${CYAN}以下是 $platform_name 的二级流媒体平台列表：${RESET}"
+    yq ".$platform_name | keys" "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl || echo -e "${YELLOW}该平台暂无配置的二级流媒体。${RESET}"
+}
+
 # 添加所有流媒体平台
 add_all_streaming_platforms() {
     if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
@@ -510,18 +507,34 @@ add_all_streaming_platforms() {
     esac
 }
 
-# 添加流媒体平台到 SmartDNS
-add_streaming_platform() {
-    if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
-        echo -e "${RED}[错误] 未找到 StreamConfig.yaml 文件，请检查路径：$STREAM_CONFIG_FILE${RESET}"
-        echo -e "${GREEN}正在下载 StreamConfig.yaml 文件 ${RESET}"
-        wget https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/StreamConfig.yaml -O StreamConfig.yaml
-        echo -e "${GREEN} StreamConfig.yaml 已下载 ${RESET}"
-        return
+
+# File Existence Check
+check_files() {
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        log_error "未找到 SmartDNS 配置文件：$CONFIG_FILE"
+        log_info "请确保 SmartDNS 已安装。"
+        exit 1
     fi
 
+    if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
+        log_error "未找到流媒体配置文件：$STREAM_CONFIG_FILE"
+        log_info "正在下载默认配置文件..."
+        wget -q "$REMOTE_SCRIPT_URL" -O "$STREAM_CONFIG_FILE"
+        if [[ $? -eq 0 ]]; then
+            log_success "默认流媒体配置文件已下载。"
+        else
+            log_error "下载流媒体配置文件失败，请检查网络连接。"
+            exit 1
+        fi
+    fi
+}
+
+# 添加流媒体平台到 SmartDNS
+add_streaming_platform() {
+    check_files
+
     echo -e "${CYAN}请输入一级流媒体平台序号：${RESET}"
-    view_streaming_platforms
+    yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl || echo -e "${YELLOW}暂无可用的流媒体平台配置。${RESET}"
     read -r platform_index
 
     platform_name=$(yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r ".[$((platform_index - 1))]")
