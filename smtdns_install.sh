@@ -14,7 +14,7 @@ REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniprox
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.3.6"
+SCRIPT_VERSION="V_2.3.7"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -514,6 +514,9 @@ add_all_streaming_platforms() {
 add_streaming_platform() {
     if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
         echo -e "${RED}[错误] 未找到 StreamConfig.yaml 文件，请检查路径：$STREAM_CONFIG_FILE${RESET}"
+        echo -e "${GREEN}正在下载 StreamConfig.yaml 文件 ${RESET}"
+        wget https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/StreamConfig.yaml -O StreamConfig.yaml
+        echo -e "${GREEN} StreamConfig.yaml 已下载 ${RESET}"
         return
     fi
 
