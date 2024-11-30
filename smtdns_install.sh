@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.5.0"
+SCRIPT_VERSION="V_2.5.1"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -703,7 +703,7 @@ while true; do
         stop_system_dns
         ;;
     t)
-        bash <(curl -L -s check.unlock.media)
+        bash <(curl -L -s https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh)
         ;;
     u)
         check_script_update
