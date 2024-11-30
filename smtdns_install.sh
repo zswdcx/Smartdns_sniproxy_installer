@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.4.1"
+SCRIPT_VERSION="V_2.4.2"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -648,13 +648,14 @@ while true; do
     echo -e "${CYAN}5.${RESET} ${GREEN} 查看已配置的上游 DNS 组${RESET}"
     echo -e "${CYAN}6.${RESET} ${GREEN} 查看流媒体平台列表${RESET}"
     echo -e "${CYAN}7.${RESET} ${GREEN} 添加流媒体平台到 SmartDNS${RESET}"
-    echo -e "${CYAN}8.${RESET} ${GREEN} 一键添加所有流媒体平台${RESET}"
+    echo -e "${CYAN}8.${RESET} ${GREEN} 查看已经添加的流媒体${RESET}"
+    echo -e "${CYAN}9.${RESET} ${GREEN} 一键添加所有流媒体平台${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
-    echo -e "${CYAN}9.${RESET} ${GREEN} 启动/重启 SmartDNS 服务并开机自启${RESET}"
-    echo -e "${CYAN}10.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
-    echo -e "${CYAN}11.${RESET} ${GREEN}启动/重启 系统DNS 并开机自启动${RESET}"
-    echo -e "${CYAN}12.${RESET} ${GREEN}停止 系统DNS 并关闭开机自启${RESET}"
-    echo -e "${CYAN}13.${RESET} ${GREEN}检测脚本更新${RESET}"
+    echo -e "${CYAN}21.${RESET} ${GREEN} 启动/重启 SmartDNS 服务并开机自启${RESET}"
+    echo -e "${CYAN}22.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
+    echo -e "${CYAN}23.${RESET} ${GREEN}启动/重启 系统DNS 并开机自启动${RESET}"
+    echo -e "${CYAN}24.${RESET} ${GREEN}停止 系统DNS 并关闭开机自启${RESET}"
+    echo -e "${CYAN}u.${RESET} ${GREEN}检测脚本更新${RESET}"
     echo -e "${CYAN}q.${RESET} ${RED}退出脚本${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
 
@@ -688,21 +689,24 @@ while true; do
         add_streaming_platform
         ;;
     8)
-        add_all_streaming_platforms
+        view_added_platforms
         ;;
     9)
+        add_all_streaming_platforms
+        ;;
+    21)
         start_smartdns
         ;;
-    10)
+    22)
         stop_smartdns
         ;;
-    11)
+    23)
         restore_system_dns
         ;;
-    12)
+    24)
         stop_system_dns
         ;;
-    13)
+    u)
         check_script_update
         ;;
     q)
