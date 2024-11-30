@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.4.6"
+SCRIPT_VERSION="V_2.4.7"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -177,7 +177,7 @@ add_upstream_dns_group() {
 # 查看现有的上游 DNS 组
 view_upstream_dns_groups() {
     echo -e "${CYAN}当前配置的上游 DNS 组：${RESET}"
-    grep -E '^server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ IP -group' "$CONFIG_FILE" | awk '{print $2, $4}' || echo -e "${YELLOW}暂无配置的上游 DNS 组。${RESET}"
+    grep -E '^server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ IP ' "$CONFIG_FILE" | awk '{print $2, $5}' || echo -e "${YELLOW}暂无配置的上游 DNS 组。${RESET}"
 }
 
 # 配置 SmartDNS
