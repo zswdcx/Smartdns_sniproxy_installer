@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.4.2"
+SCRIPT_VERSION="V_2.4.3"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -271,17 +271,6 @@ echo -e "${CYAN}       配置文件路径：$CONFIG_FILE       ${RESET}"
 echo -e "${CYAN}       流媒体配置：$STREAM_CONFIG_FILE ${RESET}"
 echo -e "${BLUE}======================================${RESET}"
 echo -e "\n"
-# # 查看一级流媒体平台列表
-# view_streaming_platforms() {
-#     if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
-#         echo -e "${RED}[错误] 未找到 StreamConfig.yaml 文件，请检查路径：$STREAM_CONFIG_FILE${RESET}"
-#         return
-#     fi
-
-#     echo -e "${CYAN}流媒体平台列表:${RESET}"
-#     yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl || echo -e "${YELLOW}暂无可用的流媒体平台配置。${RESET}"
-# }
-
 
 # 查看已添加的平台
 view_added_platforms() {
@@ -651,10 +640,12 @@ while true; do
     echo -e "${CYAN}8.${RESET} ${GREEN} 查看已经添加的流媒体${RESET}"
     echo -e "${CYAN}9.${RESET} ${GREEN} 一键添加所有流媒体平台${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
-    echo -e "${CYAN}21.${RESET} ${GREEN} 启动/重启 SmartDNS 服务并开机自启${RESET}"
+    echo -e "${CYAN}21.${RESET} ${GREEN}启动/重启 SmartDNS 服务并开机自启${RESET}"
     echo -e "${CYAN}22.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
     echo -e "${CYAN}23.${RESET} ${GREEN}启动/重启 系统DNS 并开机自启动${RESET}"
     echo -e "${CYAN}24.${RESET} ${GREEN}停止 系统DNS 并关闭开机自启${RESET}"
+    echo -e "${YELLOW}-------------------------${RESET}"
+    echo -e "${CYAN}t.${RESET} ${GREEN}流媒体检测${RESET}"
     echo -e "${CYAN}u.${RESET} ${GREEN}检测脚本更新${RESET}"
     echo -e "${CYAN}q.${RESET} ${RED}退出脚本${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
@@ -705,6 +696,9 @@ while true; do
         ;;
     24)
         stop_system_dns
+        ;;
+    t)
+        bash <(curl -L -s check.unlock.media)
         ;;
     u)
         check_script_update
