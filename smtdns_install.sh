@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.4.8"
+SCRIPT_VERSION="V_2.4.9"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -324,7 +324,7 @@ modify_platform_rules() {
             return
         fi
         # 删除现有规则
-        sed -i "/^# $platform_name/,/^$/d" "$CONFIG_FILE"
+        sed -i "/^#> $platform_name/,/^$/d" "$CONFIG_FILE"
         add_domain_rules "nameserver" "$domains" "$group_name" "$platform_name"
         ;;
     2)
@@ -335,7 +335,7 @@ modify_platform_rules() {
             return
         fi
         # 删除现有规则
-        sed -i "/^# $platform_name/,/^$/d" "$CONFIG_FILE"
+        sed -i "/^#> $platform_name/,/^$/d" "$CONFIG_FILE"
         add_domain_rules "address" "$domains" "$dns_ip" "$platform_name"
         ;;
     *)
