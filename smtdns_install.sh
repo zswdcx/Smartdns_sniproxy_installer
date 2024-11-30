@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.4.3"
+SCRIPT_VERSION="V_2.4.4"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -275,13 +275,13 @@ echo -e "\n"
 # 查看已添加的平台
 view_added_platforms() {
     echo -e "${CYAN}已添加的平台:${RESET}"
-    grep -E '^# ' "$CONFIG_FILE" | sed 's/^# //' | uniq || echo -e "${YELLOW}暂无已添加的平台。${RESET}"
+    grep -E '^#> ' "$CONFIG_FILE" | sed 's/^# //' | uniq || echo -e "${YELLOW}暂无已添加的平台。${RESET}"
 }
 
 # 检测平台是否已添加
 is_platform_added() {
     local platform_name="$1"
-    grep -q "^# $platform_name" "$CONFIG_FILE"
+    grep -q "^#> $platform_name" "$CONFIG_FILE"
 }
 
 # 添加域名规则到配置文件
@@ -292,7 +292,7 @@ add_domain_rules() {
     local platform_name="$4" # platform name
 
     # 添加注释
-    echo "# $platform_name" >>"$CONFIG_FILE"
+    echo "#> $platform_name" >>"$CONFIG_FILE"
     if [[ "$method" == "nameserver" ]]; then
         while IFS= read -r domain; do
             echo "nameserver /$domain/$identifier" >>"$CONFIG_FILE"
@@ -495,7 +495,7 @@ add_all_streaming_platforms() {
 
         yq '.' "$STREAM_CONFIG_FILE" | jq -r 'paths | select(length == 2) | .[0] as $k1 | .[1] as $k2 | "\($k1) \($k2)"' | while read -r platform sub_platform; do
             domains=$(yq ".$platform.$sub_platform[]" "$STREAM_CONFIG_FILE" | tr -d '"')
-            echo "# $sub_platform" >>"$CONFIG_FILE"
+            echo "#> $sub_platform" >>"$CONFIG_FILE"
             while IFS= read -r domain; do
                 echo "nameserver /$domain/$group_name" >>"$CONFIG_FILE"
             done <<<"$domains"
@@ -512,7 +512,7 @@ add_all_streaming_platforms() {
 
         yq '.' "$STREAM_CONFIG_FILE" | jq -r 'paths | select(length == 2) | .[0] as $k1 | .[1] as $k2 | "\($k1) \($k2)"' | while read -r platform sub_platform; do
             domains=$(yq ".$platform.$sub_platform[]" "$STREAM_CONFIG_FILE" | tr -d '"')
-            echo "# $sub_platform" >>"$CONFIG_FILE"
+            echo "#> $sub_platform" >>"$CONFIG_FILE"
             while IFS= read -r domain; do
                 echo "address /$domain/$dns_ip" >>"$CONFIG_FILE"
             done <<<"$domains"
