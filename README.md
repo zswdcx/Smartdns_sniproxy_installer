@@ -1,0 +1,2 @@
+# Smartdns_sniproxy_installer
+安装smartdns并快捷配置流媒体
