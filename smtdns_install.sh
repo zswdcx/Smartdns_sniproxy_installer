@@ -10,18 +10,44 @@ CYAN="\033[1;36m"
 
 # SmartDNS 一键安装和配置脚本
 # 请确保使用 sudo 或 root 权限运行此脚本
+REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/smtdns_install.sh"
+
 
 # 脚本版本和更新时间
-VERSION="V_2.3.0"
+SCRIPT_VERSION="V_2.3.1"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
+
+# 检测脚本更新
+check_script_update() {
+  green_echo "Checking for script updates..."
+  REMOTE_VERSION=$(curl -fsSL "$REMOTE_SCRIPT_URL" | grep -E "^SCRIPT_VERSION=" | cut -d'"' -f2)
+  if [ "$REMOTE_VERSION" != "$SCRIPT_VERSION" ]; then
+    green_echo "A newer version ($REMOTE_VERSION) is available. Your version: $SCRIPT_VERSION."
+    green_echo "是否更新脚本? (y/n)"
+    read update_choice
+    if [[ "$update_choice" == "y" || "$update_choice" == "Y" ]]; then
+      green_echo "Updating script..."
+      curl -fsSL "$REMOTE_SCRIPT_URL" -o "$0"
+      chmod +x "$0"
+      green_echo "Script updated to version $REMOTE_VERSION. Please restart the script."
+      exit 0
+    fi
+  else
+    green_echo "Your script is up-to-date. Version: $SCRIPT_VERSION."
+  fi
+}
+
+# Run update check on script start
+check_script_update
 
 # 检查是否以 root 身份运行
 if [ "$EUID" -ne 0 ]; then
   echo -e "${RED}[错误] 请以 root 权限运行此脚本！${RESET}"
   exit 1
 fi
+
 
 # 检查必要工具
 check_tools() {
@@ -581,6 +607,7 @@ while true; do
     echo -e "${CYAN}10.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
     echo -e "${CYAN}11.${RESET} ${GREEN}启动/重启 系统DNS 并开机自启动${RESET}"
     echo -e "${CYAN}12.${RESET} ${GREEN}停止 系统DNS 并关闭开机自启${RESET}"
+    echo -e "${CYAN}12.${RESET} ${GREEN}检测脚本更新${RESET}"
     echo -e "${CYAN}q.${RESET} ${RED}退出脚本${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
 
@@ -627,6 +654,9 @@ while true; do
         ;;
     11)
         stop_system_dns
+        ;;
+    12)
+        check_script_update
         ;;
     q)
         echo -e "${RED}退出脚本...${RESET}"
