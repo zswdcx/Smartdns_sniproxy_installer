@@ -8,13 +8,27 @@ RED="\033[1;31m"
 YELLOW="\033[1;33m"
 CYAN="\033[1;36m"
 
+# Helper Functions
+log_success() {
+    echo -e "${GREEN}$1${RESET}"
+}
+
+log_error() {
+    echo -e "${RED}$1${RESET}"
+}
+
+log_info() {
+    echo -e "${CYAN}$1${RESET}"
+}
+
 # SmartDNS 一键安装和配置脚本
 # 请确保使用 sudo 或 root 权限运行此脚本
 REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/smtdns_install.sh"
+REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/StreamConfig.yaml"
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.3.8"
+SCRIPT_VERSION="V_2.3.10"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -424,6 +438,9 @@ stop_smartdns() {
 
 # 查看流媒体平台列表
 view_streaming_platforms() {
+
+    check_files
+
     if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
         echo -e "${RED}[错误] 未找到 StreamConfig.yaml 文件，请检查路径：$STREAM_CONFIG_FILE${RESET}"
         return
@@ -519,7 +536,7 @@ check_files() {
     if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
         log_error "未找到流媒体配置文件：$STREAM_CONFIG_FILE"
         log_info "正在下载默认配置文件..."
-        wget -q "$REMOTE_SCRIPT_URL" -O "$STREAM_CONFIG_FILE"
+        wget -q "$REMOTE_STREAM_CONFIG_FILE_URL" -O "$STREAM_CONFIG_FILE"
         if [[ $? -eq 0 ]]; then
             log_success "默认流媒体配置文件已下载。"
         else
