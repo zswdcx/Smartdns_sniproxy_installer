@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.4.5"
+SCRIPT_VERSION="V_2.4.6"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -165,8 +165,8 @@ add_upstream_dns_group() {
                 return
             fi
 
-            echo "server $dns_ip -group $group_name -exclude-default-group" >> "$CONFIG_FILE"
-            echo -e "${GREEN}已成功添加上游 DNS：server $dns_ip -group $group_name -exclude-default-group${RESET}"
+            echo "server $dns_ip IP -group $group_name -exclude-default-group" >> "$CONFIG_FILE"
+            echo -e "${GREEN}已成功添加上游 DNS：server $dns_ip IP -group $group_name -exclude-default-group${RESET}"
         else
             break
         fi
@@ -177,7 +177,7 @@ add_upstream_dns_group() {
 # 查看现有的上游 DNS 组
 view_upstream_dns_groups() {
     echo -e "${CYAN}当前配置的上游 DNS 组：${RESET}"
-    grep -E '^server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ -group' "$CONFIG_FILE" | awk '{print $2, $4}' || echo -e "${YELLOW}暂无配置的上游 DNS 组。${RESET}"
+    grep -E '^server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ IP -group' "$CONFIG_FILE" | awk '{print $2, $4}' || echo -e "${YELLOW}暂无配置的上游 DNS 组。${RESET}"
 }
 
 # 配置 SmartDNS
@@ -217,7 +217,7 @@ server 8.8.4.4"
         echo -e "${BLUE}是否需要添加自定义上游 DNS？(y/N): ${RESET}"
         read -r add_dns
         if [[ "$add_dns" =~ ^[Yy]$ ]]; then
-            echo -e "${BLUE}请输入上游 DNS 格式（例如：11.22.33.44 -group us -exclude-default-group）:${RESET}"
+            echo -e "${BLUE}请输入上游 DNS 格式（例如：11.22.33.44）:${RESET}"
             read -r custom_dns
             if [[ "$custom_dns" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
                 echo "server $custom_dns" >> "$CONFIG_FILE"
