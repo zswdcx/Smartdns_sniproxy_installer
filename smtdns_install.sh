@@ -14,7 +14,7 @@ REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniprox
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.3.5"
+SCRIPT_VERSION="V_2.3.6"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -251,7 +251,7 @@ release_port_53() {
 # 显示脚本标题
 echo -e "${BLUE}======================================${RESET}"
 echo -e "${GREEN}       一键配置 SmartDNS 脚本          ${RESET}"
-echo -e "${CYAN}       版本：  $VERSION                ${RESET}"
+echo -e "${CYAN}       版本：  $SCRIPT_VERSION                ${RESET}"
 echo -e "${CYAN}       更新时间：$LAST_UPDATED         ${RESET}"
 echo -e "${CYAN}       配置文件路径：$CONFIG_FILE       ${RESET}"
 echo -e "${CYAN}       流媒体配置：$STREAM_CONFIG_FILE ${RESET}"
