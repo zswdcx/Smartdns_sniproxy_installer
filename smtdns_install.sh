@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.4.9"
+SCRIPT_VERSION="V_2.5.0"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -317,6 +317,7 @@ modify_platform_rules() {
 
     case $add_method in
     1)
+        view_upstream_dns_groups
         echo -e "${CYAN}请输入已存在的 DNS 组名称（例如：us）：${RESET}"
         read -r group_name
         if ! grep -q " -group $group_name" "$CONFIG_FILE"; then
@@ -328,6 +329,7 @@ modify_platform_rules() {
         add_domain_rules "nameserver" "$domains" "$group_name" "$platform_name"
         ;;
     2)
+        view_upstream_dns
         echo -e "${CYAN}请输入 DNS 服务器的 IP 地址（例如：11.22.33.44）：${RESET}"
         read -r dns_ip
         if [[ ! $dns_ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
