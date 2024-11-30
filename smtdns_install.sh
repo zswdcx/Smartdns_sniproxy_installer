@@ -14,28 +14,28 @@ REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniprox
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.3.1"
+SCRIPT_VERSION="V_2.3.2"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
 
 # 检测脚本更新
 check_script_update() {
-  green_echo "Checking for script updates..."
+  echo -e "${GREEN}Checking for script updates...${RESET}"
   REMOTE_VERSION=$(curl -fsSL "$REMOTE_SCRIPT_URL" | grep -E "^SCRIPT_VERSION=" | cut -d'"' -f2)
   if [ "$REMOTE_VERSION" != "$SCRIPT_VERSION" ]; then
-    green_echo "A newer version ($REMOTE_VERSION) is available. Your version: $SCRIPT_VERSION."
-    green_echo "是否更新脚本? (y/n)"
+    echo -e "${GREEN}A newer version ($REMOTE_VERSION) is available. Your version: $SCRIPT_VERSION.${RESET}"
+    echo -e "${GREEN}是否更新脚本? (y/n)${RESET}"
     read update_choice
     if [[ "$update_choice" == "y" || "$update_choice" == "Y" ]]; then
-      green_echo "Updating script..."
+      echo -e "${GREEN}Updating script...${RESET}"
       curl -fsSL "$REMOTE_SCRIPT_URL" -o "$0"
       chmod +x "$0"
-      green_echo "Script updated to version $REMOTE_VERSION. Please restart the script."
+      echo -e "${GREEN}Script updated to version $REMOTE_VERSION. Please restart the script.${RESET}"
       exit 0
     fi
   else
-    green_echo "Your script is up-to-date. Version: $SCRIPT_VERSION."
+    echo -e "${GREEN}Your script is up-to-date. Version: $SCRIPT_VERSION.${RESET}"
   fi
 }
 
