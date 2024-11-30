@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.4.7"
+SCRIPT_VERSION="V_2.4.8"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -669,6 +669,7 @@ while true; do
         ;;
     4)
         add_upstream_dns_group
+        start_smartdns
         ;;
     5)
         view_upstream_dns_groups
@@ -678,12 +679,14 @@ while true; do
         ;;
     7)
         add_streaming_platform
+        start_smartdns
         ;;
     8)
         view_added_platforms
         ;;
     9)
         add_all_streaming_platforms
+        start_smartdns
         ;;
     21)
         start_smartdns
