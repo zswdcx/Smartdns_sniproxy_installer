@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.4.0"
+SCRIPT_VERSION="V_2.4.1"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -421,17 +421,22 @@ stop_system_dns() {
     echo -e "${GREEN}系统 DNS 服务已停止并关闭开机自启。${RESET}"
 }
 
+# 修改 /etc/resolv.conf 文件
+motify_resolv() {
+    local ip=$1
+    echo "nameserver ${ip}" > /etc/resolv.conf 2>/dev/null
+    if [[ $? -eq 0 ]]; then
+        echo -e "${GREEN}/etc/resolv.conf 已成功修改为 nameserver ${ip}${RESET}"
+    else
+        echo -e "${RED}修改 /etc/resolv.conf 失败，请检查文件权限。${RESET}"
+    fi
+}
+
 # 恢复 SmartDNS 服务
 start_smartdns() {
     stop_service "systemd-resolved"
     restore_service "smartdns"
-    # 修改 /etc/resolv.conf 文件
-    echo "nameserver 127.0.0.1" > /etc/resolv.conf 2>/dev/null
-    if [[ $? -eq 0 ]]; then
-        echo -e "${GREEN}/etc/resolv.conf 已成功修改为 nameserver 127.0.0.1${RESET}"
-    else
-        echo -e "${RED}修改 /etc/resolv.conf 失败，请检查文件权限。${RESET}"
-    fi
+    motify_resolv "127.0.0.1"
     echo -e "${GREEN}SmartDNS 服务已启动并设置为开机启动！${RESET}"
 }
 
