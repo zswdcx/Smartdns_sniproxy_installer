@@ -37,7 +37,7 @@ REMOTE_DNSMASQ_SNIPROXY_URL=https://raw.githubusercontent.com/myxuchangbin/dnsma
 REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz"
 REMOTE_RegionRestrictionCheck_URL=https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh
 # 脚本信息
-SCRIPT_VERSION="V_2.6.4"
+SCRIPT_VERSION="V_2.6.5"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 STREAM_CONFIG_FILE="$SCRIPT_DIR/StreamConfig.yaml"
@@ -967,6 +967,28 @@ open_custom_port() {
     log_YELLOW "sudo ufw allow from xx.xx.xx.xx to any port 53 proto udp"
 }
 
+# 修改全局 DNS 函数
+set_global_dns() {
+    echo -e "${CYAN}正在将全局 DNS 修改为 8.8.8.8...${RESET}"
+
+    # 检查 /etc/resolv.conf 是否可写
+    if [[ -w /etc/resolv.conf ]]; then
+        # 备份原始 resolv.conf 文件
+        cp /etc/resolv.conf /etc/resolv.conf.bak
+        rm /etc/resolv.conf
+        echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
+        # 验证是否成功写入
+        if grep -q "8.8.8.8" /etc/resolv.conf; then
+            echo -e "${GREEN}成功将全局 DNS 修改为 8.8.8.8${RESET}"
+        else
+            echo -e "${RED}修改失败，请检查 /etc/resolv.conf 权限。${RESET}"
+        fi
+    else
+        echo -e "${RED}/etc/resolv.conf 无法写入，请检查权限或手动更改 DNS。${RESET}"
+    fi
+}
+
 # 主功能菜单
 while true; do
     echo -e "${GREEN}-----------请选择要执行的操作-----------${RESET}"
@@ -1079,6 +1101,9 @@ while true; do
         ;;
     24)
         stop_system_dns
+        ;;
+    31)
+        set_global_dns
         ;;
     t)
         bash <(curl -L -s $REMOTE_RegionRestrictionCheck_URL)
