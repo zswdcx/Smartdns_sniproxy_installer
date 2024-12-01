@@ -9,15 +9,23 @@ YELLOW="\033[1;33m"
 CYAN="\033[1;36m"
 
 # Helper Functions
-log_success() {
+log_GREEN() {
     echo -e "${GREEN}$1${RESET}"
 }
 
-log_error() {
+log_RED() {
     echo -e "${RED}$1${RESET}"
 }
 
-log_info() {
+log_BLUE() {
+    echo -e "${BLUE}$1${RESET}"
+}
+
+log_YELLOW() {
+    echo -e "${YELLOW}$1${RESET}"
+}
+
+log_CYAN() {
     echo -e "${CYAN}$1${RESET}"
 }
 
@@ -28,7 +36,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.5.2"
+SCRIPT_VERSION="V_2.5.3"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -142,10 +150,37 @@ view_upstream_dns() {
     grep -E '^server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' "$CONFIG_FILE" || echo -e "${YELLOW}暂无配置的上游 DNS。${RESET}"
 }
 
+# 在 smartdns.conf 中插入 server 条目
+insert_server_into_config() {
+    local server_line="$1"       # 要插入的 server 条目
+    local config_file="$2"       # 配置文件路径
+
+    # 检查配置文件是否存在
+    if [[ ! -f "$config_file" ]]; then
+        echo -e "${RED}配置文件不存在：$config_file${RESET}"
+        return 1
+    fi
+
+    # 转义 server_line 的特殊字符
+    local escaped_server_line=$(echo "$server_line" | sed 's/[\/&]/\\&/g; s/ /\\ /g')
+
+    echo $escaped_server_line
+    # 找到最后一个 server 条目的位置
+    local insert_position=$(grep -n "^server " "$config_file" | tail -n 1 | cut -d: -f1)
+    # 如果找到 server 条目，则在其之后插入新条目
+    if [[ -n "$insert_position" ]]; then
+        sed -i "${insert_position}a ${escaped_server_line}" "$config_file"
+        # echo -e "${GREEN}已将条目插入到最后一个 server 条目之后：$server_line${RESET}"
+    else
+        # 如果没有找到 server 条目，则将其插入到文件开头
+        sed -i "1i $server_line" "$config_file"
+        echo -e "${YELLOW}未找到 server 条目，新条目已插入到文件开头：$server_line${RESET}"
+    fi
+}
+
 
 # 添加上游 DNS 为组
 add_upstream_dns_group() {
-
     # 添加自定义上游组 DNS
     while true; do
         echo -e "${BLUE}是否需要添加自定义上游组 DNS？(y/N): ${RESET}"
@@ -164,8 +199,7 @@ add_upstream_dns_group() {
                 echo -e "${RED}组名称不能为空，请重新输入！${RESET}"
                 return
             fi
-
-            echo "server $dns_ip IP -group $group_name -exclude-default-group" >> "$CONFIG_FILE"
+            insert_server_into_config "server $dns_ip IP -group $group_name -exclude-default-group" $CONFIG_FILE
             echo -e "${GREEN}已成功添加上游 DNS：server $dns_ip IP -group $group_name -exclude-default-group${RESET}"
         else
             break
@@ -283,6 +317,7 @@ is_platform_added() {
     local platform_name="$1"
     grep -q "^#> $platform_name" "$CONFIG_FILE"
 }
+
 
 # 添加域名规则到配置文件
 add_domain_rules() {
@@ -531,19 +566,19 @@ add_all_streaming_platforms() {
 # File Existence Check
 check_files() {
     if [[ ! -f "$CONFIG_FILE" ]]; then
-        log_error "未找到 SmartDNS 配置文件：$CONFIG_FILE"
-        log_info "请确保 SmartDNS 已安装。"
+        log_RED "未找到 SmartDNS 配置文件：$CONFIG_FILE"
+        log_CYAN "请确保 SmartDNS 已安装。"
         exit 1
     fi
 
     if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
-        log_error "未找到流媒体配置文件：$STREAM_CONFIG_FILE"
-        log_info "正在下载默认配置文件..."
+        log_RED "未找到流媒体配置文件：$STREAM_CONFIG_FILE"
+        log_CYAN "正在下载默认配置文件..."
         wget -q "$REMOTE_STREAM_CONFIG_FILE_URL" -O "$STREAM_CONFIG_FILE"
         if [[ $? -eq 0 ]]; then
-            log_success "默认流媒体配置文件已下载。"
+            log_GREEN "默认流媒体配置文件已下载。"
         else
-            log_error "下载流媒体配置文件失败，请检查网络连接。"
+            log_RED "下载流媒体配置文件失败，请检查网络连接。"
             exit 1
         fi
     fi
@@ -629,79 +664,86 @@ add_all_nested_streaming_platforms() {
 # 添加流媒体平台到 SmartDNS
 add_streaming_platform() {
     check_files
+    while true; do
+        echo -e "${BLUE}是否需要添加一个流媒体平台？(y/N): ${RESET}"
+        read -r add_dns
+        if [[ "$add_dns" =~ ^[Yy]$ ]]; then
+            echo -e "${CYAN}请输入一级流媒体平台序号：${RESET}"
+            yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl || echo -e "${YELLOW}暂无可用的流媒体平台配置。${RESET}"
+            read -r platform_index
 
-    echo -e "${CYAN}请输入一级流媒体平台序号：${RESET}"
-    yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl || echo -e "${YELLOW}暂无可用的流媒体平台配置。${RESET}"
-    read -r platform_index
+            platform_name=$(yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r ".[$((platform_index - 1))]")
+            if [[ -z $platform_name ]]; then
+                echo -e "${RED}无效的序号，请重新输入！${RESET}"
+                return
+            fi
 
-    platform_name=$(yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r ".[$((platform_index - 1))]")
-    if [[ -z $platform_name ]]; then
-        echo -e "${RED}无效的序号，请重新输入！${RESET}"
-        return
-    fi
+            echo -e "${CYAN}您选择的一级平台是：${GREEN}$platform_name${RESET}"
 
-    echo -e "${CYAN}您选择的一级平台是：${GREEN}$platform_name${RESET}"
+            echo -e "${CYAN}请输入二级流媒体平台序号：${RESET}"
+            view_nested_streaming_platforms "$platform_name"
+            read -r nested_index
 
-    echo -e "${CYAN}请输入二级流媒体平台序号：${RESET}"
-    view_nested_streaming_platforms "$platform_name"
-    read -r nested_index
+            nested_name=$(yq ".$platform_name | keys" "$STREAM_CONFIG_FILE" | jq -r ".[$((nested_index - 1))]")
+            if [[ -z $nested_name ]]; then
+                echo -e "${RED}无效的序号，请重新输入！${RESET}"
+                return
+            fi
 
-    nested_name=$(yq ".$platform_name | keys" "$STREAM_CONFIG_FILE" | jq -r ".[$((nested_index - 1))]")
-    if [[ -z $nested_name ]]; then
-        echo -e "${RED}无效的序号，请重新输入！${RESET}"
-        return
-    fi
+            echo -e "${CYAN}您选择的二级平台是：${GREEN}$nested_name${RESET}"
+            domains=$(yq ".$platform_name.$nested_name[]" "$STREAM_CONFIG_FILE" | tr -d '"')
 
-    echo -e "${CYAN}您选择的二级平台是：${GREEN}$nested_name${RESET}"
-    domains=$(yq ".$platform_name.$nested_name[]" "$STREAM_CONFIG_FILE" | tr -d '"')
+            if [[ -z $domains ]]; then
+                echo -e "${YELLOW}该流媒体平台暂无配置的域名。${RESET}"
+                return
+            fi
 
-    if [[ -z $domains ]]; then
-        echo -e "${YELLOW}该流媒体平台暂无配置的域名。${RESET}"
-        return
-    fi
+            if is_platform_added "$nested_name"; then
+                echo -e "${YELLOW}该平台已存在，是否需要修改其配置？(y/N)${RESET}"
+                read -r modify_choice
+                if [[ "$modify_choice" =~ ^[Yy]$ ]]; then
+                    modify_platform_rules "$nested_name" "$domains"
+                else
+                    echo -e "${CYAN}操作取消。${RESET}"
+                fi
+            else
+                echo -e "${CYAN}请选择添加方式：${RESET}"
+                echo -e "${YELLOW}1. nameserver方式${RESET}"
+                echo -e "${YELLOW}2. address方式${RESET}"
+                read -r add_method
 
-    if is_platform_added "$nested_name"; then
-        echo -e "${YELLOW}该平台已存在，是否需要修改其配置？(y/N)${RESET}"
-        read -r modify_choice
-        if [[ "$modify_choice" =~ ^[Yy]$ ]]; then
-            modify_platform_rules "$nested_name" "$domains"
+                case $add_method in
+                1)
+                    view_upstream_dns_groups
+
+                    echo -e "${CYAN}请输入已存在的 DNS 组名称（例如：us）：${RESET}"
+                    read -r group_name
+                    if ! grep -q " -group $group_name" "$CONFIG_FILE"; then
+                        echo -e "${RED}指定的 DNS 组不存在！请先创建组。${RESET}"
+                        return
+                    fi
+                    add_domain_rules "nameserver" "$domains" "$group_name" "$nested_name"
+                    ;;
+                2)
+                    view_upstream_dns
+
+                    echo -e "${CYAN}请输入 DNS 服务器的 IP 地址（例如：11.22.33.44）：${RESET}"
+                    read -r dns_ip
+                    if [[ ! $dns_ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                        echo -e "${RED}无效的 IP 地址，请重新输入！${RESET}"
+                        return
+                    fi
+                    add_domain_rules "address" "$domains" "$dns_ip" "$nested_name"
+                    ;;
+                *)
+                    echo -e "${RED}无效选择，请重新输入！${RESET}"
+                    ;;
+                esac
+            fi
         else
-            echo -e "${CYAN}操作取消。${RESET}"
+            break
         fi
-    else
-        echo -e "${CYAN}请选择添加方式：${RESET}"
-        echo -e "${YELLOW}1. nameserver方式${RESET}"
-        echo -e "${YELLOW}2. address方式${RESET}"
-        read -r add_method
-
-        case $add_method in
-        1)
-            view_upstream_dns_groups
-
-            echo -e "${CYAN}请输入已存在的 DNS 组名称（例如：us）：${RESET}"
-            read -r group_name
-            if ! grep -q " -group $group_name" "$CONFIG_FILE"; then
-                echo -e "${RED}指定的 DNS 组不存在！请先创建组。${RESET}"
-                return
-            fi
-            add_domain_rules "nameserver" "$domains" "$group_name" "$nested_name"
-            ;;
-        2)
-            view_upstream_dns
-
-            echo -e "${CYAN}请输入 DNS 服务器的 IP 地址（例如：11.22.33.44）：${RESET}"
-            read -r dns_ip
-            if [[ ! $dns_ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo -e "${RED}无效的 IP 地址，请重新输入！${RESET}"
-                return
-            fi
-            add_domain_rules "address" "$domains" "$dns_ip" "$nested_name"
-            ;;
-        *)
-            echo -e "${RED}无效选择，请重新输入！${RESET}"
-            ;;
-        esac
-    fi
+    done
 }
 
 
@@ -715,11 +757,10 @@ while true; do
     echo -e "${CYAN}4.${RESET} ${GREEN} 添加上游 DNS 并分组${RESET}"
     echo -e "${CYAN}5.${RESET} ${GREEN} 查看已配置的上游 DNS 组${RESET}"
     echo -e "${CYAN}6.${RESET} ${GREEN} 查看流媒体平台列表${RESET}"
-    echo -e "${CYAN}7.${RESET} ${GREEN} 添加流媒体平台到 SmartDNS${RESET}"
-    echo -e "${CYAN}8.${RESET} ${GREEN} 查看已经添加的流媒体${RESET}"
-    echo -e "${CYAN}9.${RESET} ${GREEN} 一键添加所有流媒体平台${RESET}"
-    echo -e "${CYAN}10.${RESET} ${GREEN} 添加一级组内所有二级流媒体到 SmartDNS${RESET}"
-
+    echo -e "${CYAN}7.${RESET} ${GREEN} 添加一家流媒体平台到 SmartDNS${RESET}"
+    echo -e "${CYAN}8.${RESET} ${GREEN} 添加一个地区流媒体到 SmartDNS${RESET}"
+    echo -e "${CYAN}9.${RESET} ${GREEN} 添加所有流媒体平台到 SmartDNS${RESET}"
+    echo -e "${CYAN}10.${RESET} ${GREEN} 查看已经添加的流媒体${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
     echo -e "${CYAN}21.${RESET} ${GREEN}启动/重启 SmartDNS 服务并开机自启${RESET}"
     echo -e "${CYAN}22.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
@@ -750,6 +791,7 @@ while true; do
         ;;
     4)
         add_upstream_dns_group
+        restore_system_dns
         start_smartdns
         ;;
     5)
@@ -760,18 +802,21 @@ while true; do
         ;;
     7)
         add_streaming_platform
+        restore_system_dns
         start_smartdns
         ;;
     8)
-        view_added_platforms
+        add_all_nested_streaming_platforms
+        restore_system_dns
+        start_smartdns
         ;;
     9)
         add_all_streaming_platforms
+        restore_system_dns
         start_smartdns
         ;;
     10)
-        add_all_nested_streaming_platforms
-        start_smartdns
+        view_added_platforms
         ;;
     21)
         start_smartdns
