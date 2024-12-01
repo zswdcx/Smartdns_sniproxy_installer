@@ -36,7 +36,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.5.5"
+SCRIPT_VERSION="V_2.5.6"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -92,7 +92,6 @@ check_tools() {
     fi
 }
 
-
 check_tools
 
 # 获取当前外部IP地址和所属地区
@@ -111,7 +110,6 @@ check_smartdns_installed() {
         return 1
     fi
 }
-
 
 # 安装 SmartDNS
 install_smartdns() {
@@ -179,7 +177,6 @@ insert_server_into_config() {
     fi
 }
 
-
 # 添加上游 DNS 为组
 add_upstream_dns_group() {
     # 添加自定义上游组 DNS
@@ -193,7 +190,6 @@ add_upstream_dns_group() {
                 echo -e "${RED}无效的 IP 地址，请重新输入！${RESET}"
                 return
             fi
-
             echo -e "${BLUE}请输入该组的名称（例如：us）：${RESET}"
             read -r group_name
             if [[ -z $group_name ]]; then
@@ -292,10 +288,6 @@ release_port_53() {
         echo -e "${GREEN}端口 53 未被占用。${RESET}"
     fi
 }
-
-
-
-
 
 # 显示脚本标题
 echo -e "${BLUE}======================================${RESET}"
@@ -432,7 +424,12 @@ check_smartdns_status() {
 
 # 系统 DNS 状态检查
 check_system_dns_status() {
-    check_service_status "systemd-resolved" "system DNS (systemd-resolved)"
+    check_service_status "systemd-resolved" "system DNS"
+}
+
+# Sniproxy 状态检查
+check_sniproxy_status() {
+    check_service_status "sniproxy" "sniproxy"
 }
 
 # 恢复系统 DNS 服务
@@ -442,21 +439,16 @@ restore_system_dns() {
     echo -e "${GREEN}系统 DNS 服务已启动并设置为开机启动。${RESET}"
 }
 
+# 恢复Sniproxy 服务
+restore_system_dns() {
+    restore_service "sniproxy"
+    echo -e "${GREEN}sniproxy 服务已启动并设置为开机启动。${RESET}"
+}
+
 # 停止系统 DNS 服务
 stop_system_dns() {
     stop_service "systemd-resolved"
     echo -e "${GREEN}系统 DNS 服务已停止并关闭开机自启。${RESET}"
-}
-
-# 修改 /etc/resolv.conf 文件
-motify_resolv() {
-    local ip=$1
-    echo "nameserver ${ip}" > /etc/resolv.conf 2>/dev/null
-    if [[ $? -eq 0 ]]; then
-        echo -e "${GREEN}/etc/resolv.conf 已成功修改为 nameserver ${ip}${RESET}"
-    else
-        echo -e "${RED}修改 /etc/resolv.conf 失败，请检查文件权限。${RESET}"
-    fi
 }
 
 # 恢复 SmartDNS 服务
@@ -473,7 +465,22 @@ stop_smartdns() {
     echo -e "${GREEN}SmartDNS 服务已停止并关闭开机自启。${RESET}"
 }
 
+# 停止 Sniproxy 服务
+stop_sniproxy() {
+    stop_service "sniproxy"
+    echo -e "${GREEN}sniproxy 服务已停止并关闭开机自启。${RESET}"
+}
 
+# 修改 /etc/resolv.conf 文件
+motify_resolv() {
+    local ip=$1
+    echo "nameserver ${ip}" > /etc/resolv.conf 2>/dev/null
+    if [[ $? -eq 0 ]]; then
+        echo -e "${GREEN}/etc/resolv.conf 已成功修改为 nameserver ${ip}${RESET}"
+    else
+        echo -e "${RED}修改 /etc/resolv.conf 失败，请检查文件权限。${RESET}"
+    fi
+}
 
 # 查看流媒体平台列表
 view_streaming_platforms() {
@@ -748,23 +755,39 @@ add_streaming_platform() {
 }
 
 
-# 添加流媒体域名到 /etc/sniproxy.conf
-add_streaming_to_sniproxy() {
-    local platform_name="$1"
-    local sub_platform_name="$2"
-    
+# 添加域名规则到 /etc/sniproxy.conf 的 table 块中
+add_domain_to_sniproxy_table() {
+    local domain="$1"
 
-    # 检查 sniproxy 配置文件是否存在
+    # 检查配置文件是否存在
     if [[ ! -f "$SNIPROXY_CONFIG" ]]; then
         echo -e "${RED}[错误] sniproxy 配置文件未找到：$SNIPROXY_CONFIG${RESET}"
         return 1
     fi
 
-    # 检查 StreamConfig.yaml 是否存在
-    if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
-        echo -e "${RED}[错误] 未找到 StreamConfig.yaml 文件：$STREAM_CONFIG_FILE${RESET}"
+    # 检查 table 块是否存在
+    local table_start=$(grep -n "^table {" "$SNIPROXY_CONFIG" | cut -d: -f1)
+
+    if [[ -z $table_start  ]]; then
+        echo -e "${RED}[错误] sniproxy 配置文件中的 table 块未找到！${RESET}"
         return 1
     fi
+
+    # 检查域名是否已存在
+    if grep -q ".*${domain//./\\.} *" "$SNIPROXY_CONFIG"; then
+        echo -e "${YELLOW}跳过已存在的域名：$domain${RESET}"
+        return
+    fi
+
+    # 插入域名到 table 块最后一个条目之后
+    sed -i "${table_start}a \    .*${domain//./\\.} *" "$SNIPROXY_CONFIG"
+    echo -e "${GREEN}已添加域名：$domain 到 table 块内${RESET}"
+}
+
+# 添加域名规则到 sniproxy
+add_streaming_to_sniproxy() {
+    local platform_name="$1"
+    local sub_platform_name="$2"
 
     # 如果提供了二级流媒体平台
     if [[ -n "$sub_platform_name" ]]; then
@@ -775,14 +798,9 @@ add_streaming_to_sniproxy() {
             return
         fi
 
-        # 遍历域名并添加到 sniproxy.conf
+        # 遍历域名并添加到 table 块中
         for domain in $domains; do
-            if grep -qF "$domain *" "$SNIPROXY_CONFIG"; then
-                echo -e "${YELLOW}跳过已存在的域名：$domain${RESET}"
-            else
-                echo "    .*${domain//./\\.} *" >>"$SNIPROXY_CONFIG"
-                echo -e "${GREEN}已添加域名：$domain${RESET}"
-            fi
+            add_domain_to_sniproxy_table "$domain"
         done
 
     # 如果仅提供一级流媒体平台
@@ -804,8 +822,12 @@ add_streaming_to_sniproxy() {
     fi
 }
 
+
 # 用户选择添加流媒体域名到 sniproxy
 add_streaming_domains_to_sniproxy() {
+    
+    check_files
+
     echo -e "${CYAN}请选择操作：${RESET}"
     echo -e "${YELLOW}1.${RESET} 添加一个流媒体平台"
     echo -e "${YELLOW}2.${RESET} 添加一个区域内的所有流媒体平台"
@@ -869,7 +891,9 @@ while true; do
     echo -e "${CYAN}9.${RESET} ${GREEN} 添加所有流媒体平台到 SmartDNS${RESET}"
     echo -e "${CYAN}10.${RESET} ${GREEN} 查看已经添加的流媒体${RESET}"
 
-    echo -e "${CYAN}11.${RESET} ${GREEN} 添加流媒体平台到 sniproxy${RESET}"
+    echo -e "${YELLOW}-------------------------${RESET}"
+    echo -e "${CYAN}11.${RESET} ${GREEN} 安装并启动 sniproxy${RESET}"
+    echo -e "${CYAN}12.${RESET} ${GREEN} 添加流媒体平台到 sniproxy${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
     echo -e "${CYAN}21.${RESET} ${GREEN}启动/重启 SmartDNS 服务并开机自启${RESET}"
     echo -e "${CYAN}22.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
@@ -883,7 +907,7 @@ while true; do
 
     check_smartdns_status
     check_system_dns_status
-
+    check_sniproxy_status
 
     echo -e "\n${YELLOW}请选择 :${RESET}"
     read -r choice
@@ -928,7 +952,14 @@ while true; do
         view_added_platforms
         ;;
     11)
+        wget --no-check-certificate -O dnsmasq_sniproxy.sh https://raw.githubusercontent.com/myxuchangbin/dnsmasq_sniproxy_install/master/dnsmasq_sniproxy.sh && bash dnsmasq_sniproxy.sh -fs
+        ;;
+    12)
+        stop_sniproxy
+        ;;
+    13)
         add_streaming_domains_to_sniproxy
+        systemctl restart sniproxy
         ;;
     21)
         start_smartdns
