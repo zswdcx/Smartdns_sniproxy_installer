@@ -33,13 +33,14 @@ log_CYAN() {
 # 请确保使用 sudo 或 root 权限运行此脚本
 REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/smtdns_install.sh"
 REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/StreamConfig.yaml"
-
+REMOTE_DNSMASQ_SNIPROXY_URL=https://raw.githubusercontent.com/myxuchangbin/dnsmasq_sniproxy_install/master/dnsmasq_sniproxy.sh
+REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz"
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.5.8"
+SCRIPT_VERSION="V_2.6.0"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
-CONFIG_FILE="/etc/smartdns/smartdns.conf"
+SMART_CONFIG_FILE="/etc/smartdns/smartdns.conf"
 SNIPROXY_CONFIG="/etc/sniproxy.conf"
 
 # 检测脚本更新
@@ -111,6 +112,11 @@ check_smartdns_installed() {
     fi
 }
 
+# 安装 sniporxy
+install_sniproxy() {
+    wget --no-check-certificate -O dnsmasq_sniproxy.sh $REMOTE_DNSMASQ_SNIPROXY_URL && bash dnsmasq_sniproxy.sh -fs
+}
+
 # 安装 SmartDNS
 install_smartdns() {
     echo -e "${BLUE}正在安装 SmartDNS...${RESET}"
@@ -118,7 +124,7 @@ install_smartdns() {
     mkdir -p "$TEMP_DIR"
     cd "$TEMP_DIR" || exit 1
 
-    wget https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz
+    wget $REMOTE_SMARTDNS_URL
     if [ $? -ne 0 ]; then
         echo -e "${RED}[错误] SmartDNS 安装包下载失败，请检查网络连接！${RESET}"
         exit 1
@@ -146,7 +152,7 @@ install_smartdns() {
 # 查看现有的上游 DNS
 view_upstream_dns() {
     echo -e "${CYAN}当前配置的上游 DNS 列表：${RESET}"
-    grep -E '^server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' "$CONFIG_FILE" || echo -e "${YELLOW}暂无配置的上游 DNS。${RESET}"
+    grep -E '^server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' "$SMART_CONFIG_FILE" || echo -e "${YELLOW}暂无配置的上游 DNS。${RESET}"
 }
 
 # 在 smartdns.conf 中插入 server 条目
@@ -196,7 +202,7 @@ add_upstream_dns_group() {
                 echo -e "${RED}组名称不能为空，请重新输入！${RESET}"
                 return
             fi
-            insert_server_into_config "server $dns_ip IP -group $group_name -exclude-default-group" $CONFIG_FILE
+            insert_server_into_config "server $dns_ip IP -group $group_name -exclude-default-group" $SMART_CONFIG_FILE
             echo -e "${GREEN}已成功添加上游 DNS：server $dns_ip IP -group $group_name -exclude-default-group${RESET}"
         else
             break
@@ -208,14 +214,12 @@ add_upstream_dns_group() {
 # 查看现有的上游 DNS 组
 view_upstream_dns_groups() {
     echo -e "${CYAN}当前配置的上游 DNS 组：${RESET}"
-    grep -E '^server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ IP ' "$CONFIG_FILE" | awk '{print $2, $5}' || echo -e "${YELLOW}暂无配置的上游 DNS 组。${RESET}"
+    grep -E '^server [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ IP ' "$SMART_CONFIG_FILE" | awk '{print $2, $5}' || echo -e "${YELLOW}暂无配置的上游 DNS 组。${RESET}"
 }
 
 # 配置 SmartDNS
 configure_smartdns() {
     echo -e "${BLUE}正在配置 SmartDNS...${RESET}"
-
-    CONFIG_FILE="/etc/smartdns/smartdns.conf"
 
     # 默认配置文件内容
     DEFAULT_CONFIG="bind [::]:53
@@ -240,8 +244,8 @@ server 8.8.8.8
 server 8.8.4.4"
 
     # 写入默认配置文件
-    echo "$DEFAULT_CONFIG" > "$CONFIG_FILE"
-    echo -e "${GREEN}默认配置文件已生成：$CONFIG_FILE${RESET}"
+    echo "$DEFAULT_CONFIG" > "$SMART_CONFIG_FILE"
+    echo -e "${GREEN}默认配置文件已生成：$SMART_CONFIG_FILE${RESET}"
 
     # 提示用户添加自定义上游 DNS
     while true; do
@@ -251,7 +255,7 @@ server 8.8.4.4"
             echo -e "${BLUE}请输入上游 DNS 格式（例如：11.22.33.44）:${RESET}"
             read -r custom_dns
             if [[ "$custom_dns" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-                echo "server $custom_dns" >> "$CONFIG_FILE"
+                echo "server $custom_dns" >> "$SMART_CONFIG_FILE"
                 echo -e "${GREEN}已添加自定义上游 DNS: $custom_dns${RESET}"
             else
                 echo -e "\033[31m无效的格式，请重试！${RESET}"
@@ -291,24 +295,25 @@ release_port_53() {
 
 # 显示脚本标题
 echo -e "${BLUE}======================================${RESET}"
-echo -e "${GREEN}       一键配置 SmartDNS 脚本          ${RESET}"
+echo -e "${GREEN}     一键配置 SmartDNS 与 Sniproxy 脚本          ${RESET}"
 echo -e "${CYAN}       版本：  $SCRIPT_VERSION                ${RESET}"
 echo -e "${CYAN}       更新时间：$LAST_UPDATED         ${RESET}"
-echo -e "${CYAN}       配置文件路径：$CONFIG_FILE       ${RESET}"
-echo -e "${CYAN}       流媒体配置：$STREAM_CONFIG_FILE ${RESET}"
+echo -e "${CYAN}       smartdns配置文件路径：$SMART_CONFIG_FILE       ${RESET}"
+echo -e "${CYAN}       sniproxy配置文件路径：$SNIPROXY_CONFIG      ${RESET}"
+echo -e "${CYAN}       流媒体列表：$STREAM_CONFIG_FILE ${RESET}"
 echo -e "${BLUE}======================================${RESET}"
 echo -e "\n"
 
 # 查看已添加的平台
 view_added_platforms() {
     echo -e "${CYAN}已添加的平台:${RESET}"
-    grep -E '^#> ' "$CONFIG_FILE" | sed 's/^# //' | uniq || echo -e "${YELLOW}暂无已添加的平台。${RESET}"
+    grep -E '^#> ' "$SMART_CONFIG_FILE" | sed 's/^# //' | uniq || echo -e "${YELLOW}暂无已添加的平台。${RESET}"
 }
 
 # 检测平台是否已添加
 is_platform_added() {
     local platform_name="$1"
-    grep -q "^#> $platform_name" "$CONFIG_FILE"
+    grep -q "^#> $platform_name" "$SMART_CONFIG_FILE"
 }
 
 
@@ -320,14 +325,14 @@ add_domain_rules() {
     local platform_name="$4" # platform name
 
     # 添加注释
-    echo "#> $platform_name" >>"$CONFIG_FILE"
+    echo "#> $platform_name" >>"$SMART_CONFIG_FILE"
     if [[ "$method" == "nameserver" ]]; then
         while IFS= read -r domain; do
-            echo "nameserver /$domain/$identifier" >>"$CONFIG_FILE"
+            echo "nameserver /$domain/$identifier" >>"$SMART_CONFIG_FILE"
         done <<<"$domains"
     elif [[ "$method" == "address" ]]; then
         while IFS= read -r domain; do
-            echo "address /$domain/$identifier" >>"$CONFIG_FILE"
+            echo "address /$domain/$identifier" >>"$SMART_CONFIG_FILE"
         done <<<"$domains"
     fi
     echo -e "${GREEN}已成功将 $platform_name 的域名添加为 $method 方式，并添加注释。${RESET}"
@@ -348,12 +353,12 @@ modify_platform_rules() {
         view_upstream_dns_groups
         echo -e "${CYAN}请输入已存在的 DNS 组名称（例如：us）：${RESET}"
         read -r group_name
-        if ! grep -q " -group $group_name" "$CONFIG_FILE"; then
+        if ! grep -q " -group $group_name" "$SMART_CONFIG_FILE"; then
             echo -e "${RED}指定的 DNS 组不存在！请先创建组。${RESET}"
             return
         fi
         # 删除现有规则
-        sed -i "/^#> $platform_name/,/^$/d" "$CONFIG_FILE"
+        sed -i "/^#> $platform_name/,/^$/d" "$SMART_CONFIG_FILE"
         add_domain_rules "nameserver" "$domains" "$group_name" "$platform_name"
         ;;
     2)
@@ -365,7 +370,7 @@ modify_platform_rules() {
             return
         fi
         # 删除现有规则
-        sed -i "/^#> $platform_name/,/^$/d" "$CONFIG_FILE"
+        sed -i "/^#> $platform_name/,/^$/d" "$SMART_CONFIG_FILE"
         add_domain_rules "address" "$domains" "$dns_ip" "$platform_name"
         ;;
     *)
@@ -533,16 +538,16 @@ add_all_streaming_platforms() {
     1)
         echo -e "${CYAN}请输入已存在的 DNS 组名称（例如：us）：${RESET}"
         read -r group_name
-        if ! grep -q " -group $group_name" "$CONFIG_FILE"; then
+        if ! grep -q " -group $group_name" "$SMART_CONFIG_FILE"; then
             echo -e "${RED}指定的 DNS 组不存在！请先创建组。${RESET}"
             return
         fi
 
         yq '.' "$STREAM_CONFIG_FILE" | jq -r 'paths | select(length == 2) | .[0] as $k1 | .[1] as $k2 | "\($k1) \($k2)"' | while read -r platform sub_platform; do
             domains=$(yq ".$platform.$sub_platform[]" "$STREAM_CONFIG_FILE" | tr -d '"')
-            echo "#> $sub_platform" >>"$CONFIG_FILE"
+            echo "#> $sub_platform" >>"$SMART_CONFIG_FILE"
             while IFS= read -r domain; do
-                echo "nameserver /$domain/$group_name" >>"$CONFIG_FILE"
+                echo "nameserver /$domain/$group_name" >>"$SMART_CONFIG_FILE"
             done <<<"$domains"
         done
         echo -e "${GREEN}所有流媒体平台域名已添加为 nameserver 方式。${RESET}"
@@ -557,9 +562,9 @@ add_all_streaming_platforms() {
 
         yq '.' "$STREAM_CONFIG_FILE" | jq -r 'paths | select(length == 2) | .[0] as $k1 | .[1] as $k2 | "\($k1) \($k2)"' | while read -r platform sub_platform; do
             domains=$(yq ".$platform.$sub_platform[]" "$STREAM_CONFIG_FILE" | tr -d '"')
-            echo "#> $sub_platform" >>"$CONFIG_FILE"
+            echo "#> $sub_platform" >>"$SMART_CONFIG_FILE"
             while IFS= read -r domain; do
-                echo "address /$domain/$dns_ip" >>"$CONFIG_FILE"
+                echo "address /$domain/$dns_ip" >>"$SMART_CONFIG_FILE"
             done <<<"$domains"
         done
         echo -e "${GREEN}所有流媒体平台域名已添加为 address 方式。${RESET}"
@@ -573,8 +578,8 @@ add_all_streaming_platforms() {
 
 # File Existence Check
 check_files() {
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        log_RED "未找到 SmartDNS 配置文件：$CONFIG_FILE"
+    if [[ ! -f "$SMART_CONFIG_FILE" ]]; then
+        log_RED "未找到 SmartDNS 配置文件：$SMART_CONFIG_FILE"
         log_CYAN "请确保 SmartDNS 已安装。"
         exit 1
     fi
@@ -627,7 +632,7 @@ add_all_nested_streaming_platforms() {
 
         echo -e "${CYAN}请输入已存在的 DNS 组名称（例如：us）：${RESET}"
         read -r group_name
-        if ! grep -q " -group $group_name" "$CONFIG_FILE"; then
+        if ! grep -q " -group $group_name" "$SMART_CONFIG_FILE"; then
             echo -e "${RED}指定的 DNS 组不存在！请先创建组。${RESET}"
             return
         fi
@@ -726,7 +731,7 @@ add_streaming_platform() {
 
                     echo -e "${CYAN}请输入已存在的 DNS 组名称（例如：us）：${RESET}"
                     read -r group_name
-                    if ! grep -q " -group $group_name" "$CONFIG_FILE"; then
+                    if ! grep -q " -group $group_name" "$SMART_CONFIG_FILE"; then
                         echo -e "${RED}指定的 DNS 组不存在！请先创建组。${RESET}"
                         return
                     fi
@@ -954,7 +959,7 @@ while true; do
         view_added_platforms
         ;;
     11)
-        wget --no-check-certificate -O dnsmasq_sniproxy.sh https://raw.githubusercontent.com/myxuchangbin/dnsmasq_sniproxy_install/master/dnsmasq_sniproxy.sh && bash dnsmasq_sniproxy.sh -fs
+        install_sniproxy
         ;;
     12)
         add_streaming_domains_to_sniproxy
