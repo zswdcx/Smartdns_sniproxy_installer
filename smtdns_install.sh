@@ -35,43 +35,55 @@ REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniprox
 REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/StreamConfig.yaml"
 REMOTE_DNSMASQ_SNIPROXY_URL=https://raw.githubusercontent.com/myxuchangbin/dnsmasq_sniproxy_install/master/dnsmasq_sniproxy.sh
 REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz"
-
-# 脚本版本和更新时间
-SCRIPT_VERSION="V_2.6.0"
+REMOTE_RegionRestrictionCheck_URL=https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh
+# 脚本信息
+SCRIPT_VERSION="V_2.6.2"
 LAST_UPDATED=$(date +"%Y-%m-%d")
-STREAM_CONFIG_FILE="./StreamConfig.yaml"
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+STREAM_CONFIG_FILE="$SCRIPT_DIR/StreamConfig.yaml"
 SMART_CONFIG_FILE="/etc/smartdns/smartdns.conf"
 SNIPROXY_CONFIG="/etc/sniproxy.conf"
 
 # 检测脚本更新
 check_script_update() {
-  echo -e "${GREEN}Checking for script updates...${RESET}"
-  REMOTE_VERSION=$(curl -fsSL "$REMOTE_SCRIPT_URL" | grep -E "^SCRIPT_VERSION=" | cut -d'"' -f2)
+  echo -e "${GREEN}正在检查脚本更新...${RESET}"
+  # 设置超时时间为 10 秒
+  REMOTE_VERSION=$(curl --max-time 10 -fsSL "$REMOTE_SCRIPT_URL" | grep -E "^SCRIPT_VERSION=" | cut -d'"' -f2)
+  # 检查是否成功获取远程版本
+  if [ $? -ne 0 ]; then
+    echo -e "${YELLOW}无法获取到最新版本 (超时或网络问题，请检测DNS是否配置正确，可能急救还原DNS设置).${RESET}"
+    return
+  fi
+
   if [ "$REMOTE_VERSION" != "$SCRIPT_VERSION" ]; then
-    echo -e "${GREEN}A newer version ($REMOTE_VERSION) is available. Your version: $SCRIPT_VERSION.${RESET}"
-    echo -e "${GREEN}是否更新脚本? (y/n)${RESET}"
+    echo -e "${GREEN}发现新版本 ($REMOTE_VERSION) ，当前版本 $SCRIPT_VERSION.${RESET}"
+    echo -e "${GREEN}是否更新脚本? (y/N)${RESET}"
     read update_choice
     if [[ "$update_choice" == "y" || "$update_choice" == "Y" ]]; then
       echo -e "${GREEN}Updating script...${RESET}"
-      curl -fsSL "$REMOTE_SCRIPT_URL" -o "$0"
-      chmod +x "$0"
-      echo -e "${GREEN}Script updated to version $REMOTE_VERSION. Please restart the script.${RESET}"
-      exit 0
+      curl --max-time 10 -fsSL "$REMOTE_SCRIPT_URL" -o "$0"
+      if [ $? -eq 0 ]; then
+        chmod +x "$0"
+        echo -e "${GREEN}Script updated to version $REMOTE_VERSION. Please restart the script.${RESET}"
+        exit 0
+      else
+        echo -e "${RED}Failed to download the updated script. Please try again later.${RESET}"
+      fi
     fi
   else
     echo -e "${GREEN}Your script is up-to-date. Version: $SCRIPT_VERSION.${RESET}"
   fi
 }
 
-# Run update check on script start
+# 调用更新检查函数
 check_script_update
+
 
 # 检查是否以 root 身份运行
 if [ "$EUID" -ne 0 ]; then
   echo -e "${RED}[错误] 请以 root 权限运行此脚本！${RESET}"
   exit 1
 fi
-
 
 # 检查必要工具
 check_tools() {
@@ -882,9 +894,83 @@ add_streaming_domains_to_sniproxy() {
     esac
 }
 
+
+# 检查是否安装 ufw 并启动
+check_and_enable_ufw() {
+    if ! command -v ufw &>/dev/null; then
+        log_YELLOW "未检测到 UFW 防火墙。是否安装 UFW？(y/N):"
+        read -r install_ufw
+        if [[ "$install_ufw" =~ ^[Yy]$ ]]; then
+            sudo apt-get update
+            sudo apt-get install -y ufw
+            log_YELLOW "确保已开放 SSH 的 22 端口，否则可能无法远程访问！正在开放端口 22..."
+            sudo ufw allow 22
+            log_GREEN "已成功开放 22 端口。"
+        else
+            log_RED "UFW 未安装，无法继续操作。"
+            exit 1
+        fi
+    fi
+
+    if ! sudo ufw status | grep -q "active"; then
+        log_YELLOW "UFW 未启动。是否启动 UFW？(y/N):"
+        read -r start_ufw
+        if [[ "$start_ufw" =~ ^[Yy]$ ]]; then
+            sudo ufw enable
+            log_GREEN "UFW 已成功启动！"
+            log_YELLOW "确保已开放 SSH 的 22 端口，否则可能无法远程访问！正在开放端口 22..."
+            sudo ufw allow 22
+            log_GREEN "已成功开放 22 端口。"
+        else
+            log_RED "UFW 未启动，无法继续操作。"
+            exit 1
+        fi
+    fi
+}
+
+# 放开指定 IP 的 80/443/53 端口
+unlock_ports() {
+    log_CYAN "请输入被解锁机的 IP 地址："
+    read -r unlocked_ip
+
+    # 确认 IP 格式是否正确
+    if [[ ! "$unlocked_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        log_RED "无效的 IP 地址格式！"
+        return
+    fi
+    # 放开 80/443/53 端口
+    sudo ufw allow from "$unlocked_ip" to any port 80 proto tcp
+    sudo ufw allow from "$unlocked_ip" to any port 80 proto udp
+    sudo ufw allow from "$unlocked_ip" to any port 443 proto tcp
+    sudo ufw allow from "$unlocked_ip" to any port 443 proto udp
+    sudo ufw allow from "$unlocked_ip" to any port 53 proto udp
+
+    log_GREEN "已成功为 $unlocked_ip 开放以下端口：80、443、53（tcp & udp）"
+    
+}
+
+# 一键开启指定端口
+open_custom_port() {
+    log_CYAN "请输入需要开放的端口号："
+    read -r custom_port
+
+    # 确认端口号是否为数字
+    if [[ ! "$custom_port" =~ ^[0-9]+$ ]] || ((custom_port < 1 || custom_port > 65535)); then
+        log_RED "无效的端口号！请输入 1-65535 之间的数字。"
+        return
+    fi
+
+    sudo ufw allow "$custom_port"/tcp
+    sudo ufw allow "$custom_port"/udp
+    log_GREEN "已成功开放端口 $custom_port（TCP 和 UDP）。"
+    log_GREEN "ufw放开端口命令如下:"
+    log_YELLOW "sudo ufw allow from xx.xx.xx.xx to any port 53 proto udp"
+}
+
 # 主功能菜单
 while true; do
-    echo -e "${GREEN}请选择要执行的操作：${RESET}"
+    echo -e "${GREEN}-----------请选择要执行的操作-----------${RESET}"
+    echo -e "${YELLOW}-----------被解锁机--------------${RESET}"
     echo -e "${CYAN}1.${RESET} ${GREEN} 安装 SmartDNS${RESET}"
     echo -e "${CYAN}2.${RESET} ${GREEN} 重新配置 DNS${RESET}"
     echo -e "${CYAN}3.${RESET} ${GREEN} 查看已配置的上游 DNS${RESET}"
@@ -895,18 +981,21 @@ while true; do
     echo -e "${CYAN}8.${RESET} ${GREEN} 添加一个地区流媒体到 SmartDNS${RESET}"
     echo -e "${CYAN}9.${RESET} ${GREEN} 添加所有流媒体平台到 SmartDNS${RESET}"
     echo -e "${CYAN}10.${RESET} ${GREEN} 查看已经添加的流媒体${RESET}"
-
-    echo -e "${YELLOW}-------------------------${RESET}"
+    echo -e "${YELLOW}-----------解锁机--------------${RESET}"
     echo -e "${CYAN}11.${RESET} ${GREEN} 安装并启动 sniproxy${RESET}"
     echo -e "${CYAN}12.${RESET} ${GREEN} 添加流媒体平台到 sniproxy${RESET}"
     echo -e "${CYAN}13.${RESET} ${GREEN} 启动/重启 sniproxy 服务并开机自启${RESET}"
     echo -e "${CYAN}14.${RESET} ${GREEN} 停止 sniproxy 并关闭开机自启${RESET}"
-    echo -e "${YELLOW}-------------------------${RESET}"
+    echo -e "${CYAN}15.${RESET} ${GREEN} 一键对被解锁机放开 80/443/53 端口 ${RESET}"
+    echo -e "${CYAN}16.${RESET} ${GREEN} 一键开启指定 防火墙(ufw) 端口 ${RESET}"
+    echo -e "${YELLOW}-----------被解锁机--------------${RESET}"
     echo -e "${CYAN}21.${RESET} ${GREEN}启动/重启 SmartDNS 服务并开机自启${RESET}"
     echo -e "${CYAN}22.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
     echo -e "${CYAN}23.${RESET} ${GREEN}启动/重启 系统DNS 并开机自启动${RESET}"
     echo -e "${CYAN}24.${RESET} ${GREEN}停止 系统DNS 并关闭开机自启${RESET}"
-    echo -e "${YELLOW}-------------------------${RESET}"
+    echo -e "${YELLOW}-----------急救--------------${RESET}"
+    echo -e "${CYAN}31.${RESET} ${GREEN}修改全局DNS为8.8.8.8${RESET}"
+    echo -e "${YELLOW}-----------脚本相关--------------${RESET}"
     echo -e "${CYAN}t.${RESET} ${GREEN}流媒体检测${RESET}"
     echo -e "${CYAN}u.${RESET} ${GREEN}检测脚本更新${RESET}"
     echo -e "${CYAN}q.${RESET} ${RED}退出脚本${RESET}"
@@ -971,6 +1060,14 @@ while true; do
     14)
         stop_sniproxy
         ;;
+    15)
+        check_and_enable_ufw
+        unlock_ports
+        ;;
+    16)
+        check_and_enable_ufw
+        open_custom_port
+        ;;
     21)
         start_smartdns
         ;;
@@ -984,7 +1081,7 @@ while true; do
         stop_system_dns
         ;;
     t)
-        bash <(curl -L -s https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh)
+        bash <(curl -L -s $REMOTE_RegionRestrictionCheck_URL)
         ;;
     u)
         check_script_update
