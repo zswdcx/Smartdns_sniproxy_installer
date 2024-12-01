@@ -37,7 +37,7 @@ REMOTE_DNSMASQ_SNIPROXY_URL=https://raw.githubusercontent.com/myxuchangbin/dnsma
 REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz"
 REMOTE_RegionRestrictionCheck_URL=https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh
 # 脚本信息
-SCRIPT_VERSION="V_2.6.6"
+SCRIPT_VERSION="V_2.6.7"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 STREAM_CONFIG_FILE="$SCRIPT_DIR/StreamConfig.yaml"
@@ -51,7 +51,7 @@ check_script_update() {
   REMOTE_VERSION=$(curl --max-time 10 -fsSL "$REMOTE_SCRIPT_URL" | grep -E "^SCRIPT_VERSION=" | cut -d'"' -f2)
   # 检查是否成功获取远程版本
   if [ $? -ne 0 ]; then
-    echo -e "${YELLOW}无法获取到最新版本 (超时或网络问题，请检测DNS是否配置正确，可能急救还原DNS设置).${RESET}"
+    echo -e "${YELLOW}无法获取到最新版本 (超时或网络问题，请检测DNS是否配置正确，可尝试急救还原DNS设置).${RESET}"
     return
   fi
 
@@ -259,23 +259,24 @@ server 8.8.4.4"
     echo "$DEFAULT_CONFIG" > "$SMART_CONFIG_FILE"
     echo -e "${GREEN}默认配置文件已生成：$SMART_CONFIG_FILE${RESET}"
 
-    # 提示用户添加自定义上游 DNS
-    while true; do
-        echo -e "${BLUE}是否需要添加自定义上游 DNS？(y/N): ${RESET}"
-        read -r add_dns
-        if [[ "$add_dns" =~ ^[Yy]$ ]]; then
-            echo -e "${BLUE}请输入上游 DNS 格式（例如：11.22.33.44）:${RESET}"
-            read -r custom_dns
-            if [[ "$custom_dns" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-                echo "server $custom_dns" >> "$SMART_CONFIG_FILE"
-                echo -e "${GREEN}已添加自定义上游 DNS: $custom_dns${RESET}"
-            else
-                echo -e "\033[31m无效的格式，请重试！${RESET}"
-            fi
-        else
-            break
-        fi
-    done
+    add_upstream_dns_group
+    # # 提示用户添加自定义上游 DNS
+    # while true; do
+    #     echo -e "${BLUE}是否需要添加自定义上游 DNS？(y/N): ${RESET}"
+    #     read -r add_dns
+    #     if [[ "$add_dns" =~ ^[Yy]$ ]]; then
+    #         echo -e "${BLUE}请输入上游 DNS 格式（例如：11.22.33.44）:${RESET}"
+    #         read -r custom_dns
+    #         if [[ "$custom_dns" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+    #             echo "server $custom_dns" >> "$SMART_CONFIG_FILE"
+    #             echo -e "${GREEN}已添加自定义上游 DNS: $custom_dns${RESET}"
+    #         else
+    #             echo -e "\033[31m无效的格式，请重试！${RESET}"
+    #         fi
+    #     else
+    #         break
+    #     fi
+    # done
 
     echo -e "${GREEN}SmartDNS 配置完成！${RESET}"
 }
@@ -997,35 +998,34 @@ while true; do
     echo -e "${GREEN}-----------请选择要执行的操作-----------${RESET}"
     echo -e "${YELLOW}-----------被解锁机--------------${RESET}"
     echo -e "${CYAN}1.${RESET} ${GREEN} 安装 SmartDNS${RESET}"
-    echo -e "${CYAN}2.${RESET} ${GREEN} 重新配置 DNS${RESET}"
-    echo -e "${CYAN}3.${RESET} ${GREEN} 查看已配置的上游 DNS${RESET}"
-    echo -e "${CYAN}4.${RESET} ${GREEN} 添加上游 DNS 并分组${RESET}"
-    echo -e "${CYAN}5.${RESET} ${GREEN} 查看已配置的上游 DNS 组${RESET}"
-    echo -e "${CYAN}6.${RESET} ${GREEN} 查看流媒体平台列表${RESET}"
-    echo -e "${CYAN}7.${RESET} ${GREEN} 添加一家流媒体平台到 SmartDNS${RESET}"
-    echo -e "${CYAN}8.${RESET} ${GREEN} 添加一个地区流媒体到 SmartDNS${RESET}"
-    echo -e "${CYAN}9.${RESET} ${GREEN} 添加所有流媒体平台到 SmartDNS${RESET}"
-    echo -e "${CYAN}10.${RESET} ${GREEN} 查看已经添加的流媒体${RESET}"
-    echo -e "${YELLOW}-----------解锁机--------------${RESET}"
+    echo -e "${CYAN}2.${RESET} ${GREEN} 重新配置 SmartDNS${RESET}"
+    echo -e "${CYAN}3.${RESET} ${GREEN} 添加上游 DNS 并分组${RESET}"
+    echo -e "${CYAN}4.${RESET} ${GREEN} 查看已配置的上游 DNS 组${RESET}"
+    echo -e "${CYAN}5.${RESET} ${GREEN} 查看流媒体平台列表${RESET}"
+    echo -e "${CYAN}6.${RESET} ${GREEN} 添加一家流媒体平台到 SmartDNS${RESET}"
+    echo -e "${CYAN}7.${RESET} ${GREEN} 添加一个地区流媒体到 SmartDNS${RESET}"
+    echo -e "${CYAN}8.${RESET} ${GREEN} 添加所有流媒体平台到 SmartDNS${RESET}"
+    echo -e "${CYAN}9.${RESET} ${GREEN} 查看已经添加的流媒体${RESET}"
+    echo -e "${YELLOW}-----------sniproxy相关(解锁机)--------------${RESET}"
     echo -e "${CYAN}11.${RESET} ${GREEN} 安装并启动 sniproxy${RESET}"
     echo -e "${CYAN}12.${RESET} ${GREEN} 添加流媒体平台到 sniproxy${RESET}"
     echo -e "${CYAN}13.${RESET} ${GREEN} 启动/重启 sniproxy 服务并开机自启${RESET}"
     echo -e "${CYAN}14.${RESET} ${GREEN} 停止 sniproxy 并关闭开机自启${RESET}"
     echo -e "${CYAN}15.${RESET} ${GREEN} 一键对被解锁机放开 80/443/53 端口 ${RESET}"
     echo -e "${CYAN}16.${RESET} ${GREEN} 一键开启指定 防火墙(ufw) 端口 ${RESET}"
-    echo -e "${YELLOW}-----------被解锁机--------------${RESET}"
+    echo -e "${YELLOW}-----------SmartDNS相关(被解锁机)--------------${RESET}"
     echo -e "${CYAN}21.${RESET} ${GREEN}启动/重启 SmartDNS 服务并开机自启${RESET}"
     echo -e "${CYAN}22.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
     echo -e "${CYAN}23.${RESET} ${GREEN}启动/重启 系统DNS 并开机自启动${RESET}"
     echo -e "${CYAN}24.${RESET} ${GREEN}停止 系统DNS 并关闭开机自启${RESET}"
-    echo -e "${YELLOW}-----------急救--------------${RESET}"
+    echo -e "${YELLOW}-----------DNS急救--------------${RESET}"
     echo -e "${CYAN}31.${RESET} ${GREEN}修改全局DNS为8.8.8.8${RESET}"
     echo -e "${YELLOW}-----------脚本相关--------------${RESET}"
     echo -e "${CYAN}t.${RESET} ${GREEN}流媒体检测${RESET}"
     echo -e "${CYAN}u.${RESET} ${GREEN}检测脚本更新${RESET}"
     echo -e "${CYAN}d.${RESET} ${GREEN}下载最新版本流媒体列表文件${RESET}"
     echo -e "${CYAN}q.${RESET} ${RED}退出脚本${RESET}"
-    echo -e "${YELLOW}-------------------------${RESET}"
+    echo -e "${YELLOW}---服务运行状态(SmartDNS 与 系统DNS不同时运行)---${RESET}"
 
     check_smartdns_status
     check_system_dns_status
@@ -1040,37 +1040,36 @@ while true; do
         ;;
     2)
         configure_smartdns
+        restore_system_dns
+        start_smartdns
         ;;
     3)
-        view_upstream_dns
-        ;;
-    4)
         add_upstream_dns_group
         restore_system_dns
         start_smartdns
         ;;
-    5)
+    4)
         view_upstream_dns_groups
         ;;
-    6)
+    5)
         view_streaming_platforms
         ;;
-    7)
+    6)
         add_streaming_platform
         restore_system_dns
         start_smartdns
         ;;
-    8)
+    7)
         add_all_nested_streaming_platforms
         restore_system_dns
         start_smartdns
         ;;
-    9)
+    8)
         add_all_streaming_platforms
         restore_system_dns
         start_smartdns
         ;;
-    10)
+    9)
         view_added_platforms
         ;;
     11)
