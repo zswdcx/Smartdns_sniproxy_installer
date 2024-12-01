@@ -37,7 +37,7 @@ REMOTE_DNSMASQ_SNIPROXY_URL=https://raw.githubusercontent.com/myxuchangbin/dnsma
 REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz"
 REMOTE_RegionRestrictionCheck_URL=https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh
 # 脚本信息
-SCRIPT_VERSION="V_2.6.2"
+SCRIPT_VERSION="V_2.6.4"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 STREAM_CONFIG_FILE="$SCRIPT_DIR/StreamConfig.yaml"
@@ -64,14 +64,14 @@ check_script_update() {
       curl --max-time 10 -fsSL "$REMOTE_SCRIPT_URL" -o "$0"
       if [ $? -eq 0 ]; then
         chmod +x "$0"
-        echo -e "${GREEN}Script updated to version $REMOTE_VERSION. Please restart the script.${RESET}"
+        echo -e "${GREEN}脚本已经更新为 $REMOTE_VERSION. 请重新运行脚本.${RESET}"
         exit 0
       else
-        echo -e "${RED}Failed to download the updated script. Please try again later.${RESET}"
+        echo -e "${RED}脚本更新失败.${RESET}"
       fi
     fi
   else
-    echo -e "${GREEN}Your script is up-to-date. Version: $SCRIPT_VERSION.${RESET}"
+    echo -e "${GREEN}当前脚本已为最新版本: $SCRIPT_VERSION.${RESET}"
   fi
 }
 
