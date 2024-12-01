@@ -37,7 +37,7 @@ REMOTE_DNSMASQ_SNIPROXY_URL=https://raw.githubusercontent.com/myxuchangbin/dnsma
 REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz"
 REMOTE_RegionRestrictionCheck_URL=https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh
 # 脚本信息
-SCRIPT_VERSION="V_2.6.8"
+SCRIPT_VERSION="V_2.6.9"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 STREAM_CONFIG_FILE="$SCRIPT_DIR/StreamConfig.yaml"
@@ -549,51 +549,53 @@ add_all_streaming_platforms() {
         echo -e "${RED}[错误] 未找到 StreamConfig.yaml 文件，请检查路径：$STREAM_CONFIG_FILE${RESET}"
         return
     fi
+    log_RED "添加所有流媒体平台到SmartDNS吗? y/N"
+    read -r confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo -e "${CYAN}请选择添加方式：${RESET}"
+        echo -e "${YELLOW}1. nameserver方式${RESET}"
+        echo -e "${YELLOW}2. address方式${RESET}"
+        read -r add_method
 
-    echo -e "${CYAN}请选择添加方式：${RESET}"
-    echo -e "${YELLOW}1. nameserver方式${RESET}"
-    echo -e "${YELLOW}2. address方式${RESET}"
-    read -r add_method
+        case $add_method in
+        1)
+            echo -e "${CYAN}请输入已存在的 DNS 组名称（例如：us）：${RESET}"
+            read -r group_name
+            if ! grep -q " -group $group_name" "$SMART_CONFIG_FILE"; then
+                echo -e "${RED}指定的 DNS 组不存在！请先创建组。${RESET}"
+                return
+            fi
 
-    case $add_method in
-    1)
-        echo -e "${CYAN}请输入已存在的 DNS 组名称（例如：us）：${RESET}"
-        read -r group_name
-        if ! grep -q " -group $group_name" "$SMART_CONFIG_FILE"; then
-            echo -e "${RED}指定的 DNS 组不存在！请先创建组。${RESET}"
-            return
-        fi
+            yq '.' "$STREAM_CONFIG_FILE" | jq -r 'paths | select(length == 2) | .[0] as $k1 | .[1] as $k2 | "\($k1) \($k2)"' | while read -r platform sub_platform; do
+                domains=$(yq ".$platform.$sub_platform[]" "$STREAM_CONFIG_FILE" | tr -d '"')
+                echo "#> $sub_platform" >>"$SMART_CONFIG_FILE"
+                while IFS= read -r domain; do
+                    echo "nameserver /$domain/$group_name" >>"$SMART_CONFIG_FILE"
+                done <<<"$domains"
+            done
+            echo -e "${GREEN}所有流媒体平台域名已添加为 nameserver 方式。${RESET}"
+            ;;
+        2)
+            echo -e "${CYAN}请输入 DNS 服务器的 IP 地址（例如：11.22.33.44）：${RESET}"
+            read -r dns_ip
+            if [[ ! $dns_ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo -e "${RED}无效的 IP 地址，请重新输入！${RESET}"
+                return
+            fi
 
-        yq '.' "$STREAM_CONFIG_FILE" | jq -r 'paths | select(length == 2) | .[0] as $k1 | .[1] as $k2 | "\($k1) \($k2)"' | while read -r platform sub_platform; do
-            domains=$(yq ".$platform.$sub_platform[]" "$STREAM_CONFIG_FILE" | tr -d '"')
-            echo "#> $sub_platform" >>"$SMART_CONFIG_FILE"
-            while IFS= read -r domain; do
-                echo "nameserver /$domain/$group_name" >>"$SMART_CONFIG_FILE"
-            done <<<"$domains"
-        done
-        echo -e "${GREEN}所有流媒体平台域名已添加为 nameserver 方式。${RESET}"
-        ;;
-    2)
-        echo -e "${CYAN}请输入 DNS 服务器的 IP 地址（例如：11.22.33.44）：${RESET}"
-        read -r dns_ip
-        if [[ ! $dns_ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo -e "${RED}无效的 IP 地址，请重新输入！${RESET}"
-            return
-        fi
-
-        yq '.' "$STREAM_CONFIG_FILE" | jq -r 'paths | select(length == 2) | .[0] as $k1 | .[1] as $k2 | "\($k1) \($k2)"' | while read -r platform sub_platform; do
-            domains=$(yq ".$platform.$sub_platform[]" "$STREAM_CONFIG_FILE" | tr -d '"')
-            echo "#> $sub_platform" >>"$SMART_CONFIG_FILE"
-            while IFS= read -r domain; do
-                echo "address /$domain/$dns_ip" >>"$SMART_CONFIG_FILE"
-            done <<<"$domains"
-        done
-        echo -e "${GREEN}所有流媒体平台域名已添加为 address 方式。${RESET}"
-        ;;
-    *)
-        echo -e "${RED}无效选择，请重新输入！${RESET}"
-        ;;
-    esac
+            yq '.' "$STREAM_CONFIG_FILE" | jq -r 'paths | select(length == 2) | .[0] as $k1 | .[1] as $k2 | "\($k1) \($k2)"' | while read -r platform sub_platform; do
+                domains=$(yq ".$platform.$sub_platform[]" "$STREAM_CONFIG_FILE" | tr -d '"')
+                echo "#> $sub_platform" >>"$SMART_CONFIG_FILE"
+                while IFS= read -r domain; do
+                    echo "address /$domain/$dns_ip" >>"$SMART_CONFIG_FILE"
+                done <<<"$domains"
+            done
+            echo -e "${GREEN}所有流媒体平台域名已添加为 address 方式。${RESET}"
+            ;;
+        *)
+            echo -e "${RED}无效选择，请重新输入！${RESET}"
+            ;;
+        esac
 }
 
 
