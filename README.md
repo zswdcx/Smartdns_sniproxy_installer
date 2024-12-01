@@ -15,7 +15,7 @@ smartdns：一个DNS服务器，用来分流DNS域名是否走sniproxy代理
 ### 必要准备
 
 1. 一台或多台能解锁流媒体的vps，**简称“解锁机”**
-2. 没有vps的可以使用免费或付费的dns解锁服务
+2. 没有vps的可以使用免费或付费的dns解锁服务，请注册Alice免费的DNS解锁服务[Alice](https://app.alice.ws/)
 3. 一台或多台不能解锁流媒体的vps，**简称“被解锁机”**
 
 
@@ -75,7 +75,7 @@ bash smtdns_install.sh
 
 ## 阅读顺序
 
-> 如果您不想配置解锁机，请注册Alice免费的DNS解锁服务https://app.alice.ws/，申请DNS解锁。随后，请阅读“被解锁机”篇章，使用`nameserver`添加DNS服务器。
+> 如果您不想配置解锁机，请注册Alice免费的DNS解锁服务[Alice](https://app.alice.ws/)，申请DNS解锁。随后，请阅读“被解锁机”篇章，使用`nameserver`添加DNS服务器。
 >
 > 如果您有自己的解锁机，可以先阅读“解锁机”篇章，配置自己的解锁机，随后使用`address`添加DNS服务器。
 
