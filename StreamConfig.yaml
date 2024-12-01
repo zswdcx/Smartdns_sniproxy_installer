@@ -481,15 +481,15 @@ China_Media:
 
 North_America_Media:
   FOX:
-    - "x-live-fox-stgec.uplynk.com"
-    - "fox.com"
-    - "foxdcg.com"
-    - "theplatform.com"
-    - "cdn-fox-networks-group-green.akamaized.net"
-    - "d3cv4a9a9wh0bt.cloudfront.net"
-    - "foxsports01-i.akamaihd.net"
-    - "foxsports02-i.akamaihd.net"
-    - "foxsports03-i.akamaihd.net"
+    - x-live-fox-stgec.uplynk.com
+    - fox.com
+    - foxdcg.com
+    - theplatform.com
+    - cdn-fox-networks-group-green.akamaized.net
+    - d3cv4a9a9wh0bt.cloudfront.net
+    - foxsports01-i.akamaihd.net
+    - foxsports02-i.akamaihd.net
+    - foxsports03-i.akamaihd.net
   Hulu:
     - assetshuluimcom-a.akamaihd.net
     - cws-hulu.conviva.com
@@ -500,261 +500,261 @@ North_America_Media:
     - huluqa.com
     - hulustream.com
   NFL:
-    - "nfl.com"
+    - nfl.com
   ESPN_Plus:
-    - "espn.api.edge.bamgrid.com"
-    - "espn.hb.omtrdc.net"
-    - "espndotcom.tt.omtrdc.net"
-    - "dtci.co"
-    - "dtci.technology"
-    - "espn.co.uk"
-    - "espn.com"
-    - "espn.net"
-    - "espncdn.com"
-    - "espnqa.com"
-    - "watchespn.com"
+    - espn.api.edge.bamgrid.com
+    - espn.hb.omtrdc.net
+    - espndotcom.tt.omtrdc.net
+    - dtci.co
+    - dtci.technology
+    - espn.co.uk
+    - espn.com
+    - espn.net
+    - espncdn.com
+    - espnqa.com
+    - watchespn.com
   Epix:
-    - "epix.com"
+    - epix.com
   Starz:
-    - "starz.com"
+    - starz.com
   Philo:
-    - "philo.com"
+    - philo.com
   FXNOW:
-    - "fxnow.fxnetworks.com"
+    - fxnow.fxnetworks.com
   TLC_GO:
-    - "geolocation.onetrust.com"
+    - geolocation.onetrust.com
   HBO_Max:
-    - "max.com"
-    - "hbo.com"
-    - "hbogo.com"
-    - "hbomax.com"
-    - "hbomaxcdn.com"
-    - "hbonow.com"
-    - "maxgo.com"
-    - "discomax.com"
+    - max.com
+    - hbo.com
+    - hbogo.com
+    - hbomax.com
+    - hbomaxcdn.com
+    - hbonow.com
+    - maxgo.com
+    - discomax.com
   Shudder:
-    - "shudder.com"
+    - shudder.com
   BritBox:
-    - "vod-dash-ntham-comm-live.akamaized.net"
-    - "vod-dash-ntham-comm.live.cf.md.bbci.co.uk"
-    - "vod-hls-ntham-comm-live.akamaized.net"
-    - "vod-hls-ntham-comm.live.cf.md.bbci.co.uk"
-    - "britbox.com"
-    - "d2z3p34itxwaj7.cloudfront.net"
+    - vod-dash-ntham-comm-live.akamaized.net
+    - vod-dash-ntham-comm.live.cf.md.bbci.co.uk
+    - vod-hls-ntham-comm-live.akamaized.net
+    - vod-hls-ntham-comm.live.cf.md.bbci.co.uk
+    - britbox.com
+    - d2z3p34itxwaj7.cloudfront.net
   Crackle:
-    - "crackle.com"
+    - crackle.com
   CW_TV:
-    - "cwtv.com"
+    - cwtv.com
   A_E_TV:
-    - "aetv.com"
-    - "ccpa-service.sp-prod.net"
+    - aetv.com
+    - ccpa-service.sp-prod.net
   NBA_TV:
-    - "nba.com"
-    - "neulion-a.akamaihd.net"
-    - "nlnbamdnyc-a.akamaihd.net"
-    - "sdk.iad-03.braze.com"
-    - "nbaprop.sc.omtrdc.net"
-    - "nlnbaqos.neulion.com"
-    - "watchnba.cdnfastly.endeavorstreaming.net"
-    - "nbaapi.neulion.com"
-    - "nba-api-cdn.opin.media"
-    - "neulionqos-a.akamaihd.net"
-    - "neulion.com"
-    - "nbaprop.tt.omtrdc.net"
-    - "lion-nba-msl.akamaized.net"
-    - "nbanlds19vod.akamaized.net"
+    - nba.com
+    - neulion-a.akamaihd.net
+    - nlnbamdnyc-a.akamaihd.net
+    - sdk.iad-03.braze.com
+    - nbaprop.sc.omtrdc.net
+    - nlnbaqos.neulion.com
+    - watchnba.cdnfastly.endeavorstreaming.net
+    - nbaapi.neulion.com
+    - nba-api-cdn.opin.media
+    - neulionqos-a.akamaihd.net
+    - neulion.com
+    - nbaprop.tt.omtrdc.net
+    - lion-nba-msl.akamaized.net
+    - nbanlds19vod.akamaized.net
   Fubo_TV:
-    - "fubo.tv"
+    - fubo.tv
   Tubi_TV:
-    - "tubitv.com"
+    - tubitv.com
   Sling_TV:
-    - "dishworld.com"
-    - "slinginternational.com"
-    - "sling.com"
-    - "movenetworks.com"
-    - "movetv.com"
+    - dishworld.com
+    - slinginternational.com
+    - sling.com
+    - movenetworks.com
+    - movetv.com
   Pluto_TV:
-    - "pluto.tv"
+    - pluto.tv
   Acorn_TV:
-    - "edge.api.brightcove.com"
-    - "api.rlje.net"
-    - "boltdns.net"
-    - "acorn.tv"
+    - edge.api.brightcove.com
+    - api.rlje.net
+    - boltdns.net
+    - acorn.tv
   Showtime:
-    - "sho.com"
-    - "showtime.com"
-    - "showtimeanytime.com"
+    - sho.com
+    - showtime.com
+    - showtimeanytime.com
   encoreTVB:
-    - "encoretvb.com"
-    - "bcbolt446c5271-a.akamaihd.net"
-    - "videos-f.jwpsrv.com"
-    - "content.jwplatform.com"
-    - "edge.api.brightcove.com"
+    - encoretvb.com
+    - bcbolt446c5271-a.akamaihd.net
+    - videos-f.jwpsrv.com
+    - content.jwplatform.com
+    - edge.api.brightcove.com
   Funimation:
-    - "funimation.com"
+    - funimation.com
   Discovery_Plus:
-    - "content-ause1-ur-discovery1.uplynk.com"
-    - "disco-api.com"
-    - "discoveryplus.com"
-    - "x-default-stgec.uplynk.com"
-    - "discovery.com"
-    - "discoveryplus.co.uk"
-    - "getblueshift.com"
-    - "litix.io"
-    - "mobile-collector.newrelic.com"
-    - "discovery.uplynk.com"
+    - content-ause1-ur-discovery1.uplynk.com
+    - disco-api.com
+    - discoveryplus.com
+    - x-default-stgec.uplynk.com
+    - discovery.com
+    - discoveryplus.co.uk
+    - getblueshift.com
+    - litix.io
+    - mobile-collector.newrelic.com
+    - discovery.uplynk.com
   Paramount_Plus:
-    - "paramountplus.com"
-    - "cbsi.live.ott.irdeto.com"
-    - "cbsplaylistserver.aws.syncbak.com"
-    - "cbsservice.aws.syncbak.com"
-    - "link.theplatform.com"
-    - "cbsaavideo.com"
-    - "cbsi.com"
-    - "cbsivideo.com"
-    - "pplusstatic.com"
+    - paramountplus.com
+    - cbsi.live.ott.irdeto.com
+    - cbsplaylistserver.aws.syncbak.com
+    - cbsservice.aws.syncbak.com
+    - link.theplatform.com
+    - cbsaavideo.com
+    - cbsi.com
+    - cbsivideo.com
+    - pplusstatic.com
   Peacock_TV:
-    - "peacocktv.com"
-    - "peacock.com"
+    - peacocktv.com
+    - peacock.com
   Popcornflix:
-    - "popcornflix.com"
-    - "popcornflix-prod.cloud.seachange.com"
+    - popcornflix.com
+    - popcornflix-prod.cloud.seachange.com
   Crunchyroll:
-    - "crunchyroll.com"
-    - "vrv.co"
+    - crunchyroll.com
+    - vrv.co
   Directv_Stream:
-    - "atttvnow.com"
+    - atttvnow.com
   KBS_American:
-    - "kbs.co.kr"
+    - kbs.co.kr
   KOCOWA:
-    - "kocowa.com"
+    - kocowa.com
   F1TV:
-    - "f1prodlive.akamaized.net"
-    - "formula1.com"
+    - f1prodlive.akamaized.net
+    - formula1.com
 
 Oceania_Media:
   NBA_TV:
-    - "nba.com"
-    - "neulion-a.akamaihd.net"
-    - "nlnbamdnyc-a.akamaihd.net"
-    - "sdk.iad-03.braze.com"
-    - "nbaprop.sc.omtrdc.net"
-    - "nlnbaqos.neulion.com"
-    - "watchnba.cdnfastly.endeavorstreaming.net"
-    - "nbaapi.neulion.com"
-    - "nba-api-cdn.opin.media"
-    - "neulionqos-a.akamaihd.net"
-    - "neulion.com"
-    - "nbaprop.tt.omtrdc.net"
-    - "lion-nba-msl.akamaized.net"
-    - "nbanlds19vod.akamaized.net"
+    - nba.com
+    - neulion-a.akamaihd.net
+    - nlnbamdnyc-a.akamaihd.net
+    - sdk.iad-03.braze.com
+    - nbaprop.sc.omtrdc.net
+    - nlnbaqos.neulion.com
+    - watchnba.cdnfastly.endeavorstreaming.net
+    - nbaapi.neulion.com
+    - nba-api-cdn.opin.media
+    - neulionqos-a.akamaihd.net
+    - neulion.com
+    - nbaprop.tt.omtrdc.net
+    - lion-nba-msl.akamaized.net
+    - nbanlds19vod.akamaized.net
   Acorn_TV:
-    - "edge.api.brightcove.com"
-    - "api.rlje.net"
-    - "boltdns.net"
-    - "acorn.tv"
+    - edge.api.brightcove.com
+    - api.rlje.net
+    - boltdns.net
+    - acorn.tv
   Showtime:
-    - "sho.com"
-    - "showtime.com"
-    - "showtimeanytime.com"
+    - sho.com
+    - showtime.com
+    - showtimeanytime.com
   BritBox:
-    - "vod-dash-ntham-comm-live.akamaized.net"
-    - "vod-dash-ntham-comm.live.cf.md.bbci.co.uk"
-    - "vod-hls-ntham-comm-live.akamaized.net"
-    - "vod-hls-ntham-comm.live.cf.md.bbci.co.uk"
-    - "britbox.com"
-    - "d2z3p34itxwaj7.cloudfront.net"
+    - vod-dash-ntham-comm-live.akamaized.net
+    - vod-dash-ntham-comm.live.cf.md.bbci.co.uk
+    - vod-hls-ntham-comm-live.akamaized.net
+    - vod-hls-ntham-comm.live.cf.md.bbci.co.uk
+    - britbox.com
+    - d2z3p34itxwaj7.cloudfront.net
   Funimation:
-    - "funimation.com"
-    - "funimationsvc.com"
+    - funimation.com
+    - funimationsvc.com
   Paramount_Plus:
-    - "paramountplus.com"
-    - "cbsi.live.ott.irdeto.com"
-    - "cbsplaylistserver.aws.syncbak.com"
-    - "cbsservice.aws.syncbak.com"
-    - "link.theplatform.com"
-    - "cbsaavideo.com"
-    - "cbsi.com"
-    - "cbsivideo.com"
-    - "pplusstatic.com"
+    - paramountplus.com
+    - cbsi.live.ott.irdeto.com
+    - cbsplaylistserver.aws.syncbak.com
+    - cbsservice.aws.syncbak.com
+    - link.theplatform.com
+    - cbsaavideo.com
+    - cbsi.com
+    - cbsivideo.com
+    - pplusstatic.com
   AU_Stan:
-    - "stan.com.au"
-    - "stan.video"
-    - "streamcoimg-a.akamaihd.net"
-    - "live01-stan.akamaized.net"
-    - "live02-stan.akamaized.net"
+    - stan.com.au
+    - stan.video
+    - streamcoimg-a.akamaihd.net
+    - live01-stan.akamaized.net
+    - live02-stan.akamaized.net
   AU_Binge_Kayo_Sports:
-    - "kayosports.com.au"
-    - "streamotion.com.au"
+    - kayosports.com.au
+    - streamotion.com.au
   AU_Docplay:
-    - "docplay.com"
-    - "0c86e2d1-madman-com-au.akamaized.net"
-    - "ff1be285-madman-com-au.akamaized.net"
-    - "5a929471-madman-com-au.akamaized.net"
-    - "879ed873-madman-com-au.akamaized.net"
+    - docplay.com
+    - 0c86e2d1-madman-com-au.akamaized.net
+    - ff1be285-madman-com-au.akamaized.net
+    - 5a929471-madman-com-au.akamaized.net
+    - 879ed873-madman-com-au.akamaized.net
   AU_7plus:
-    - "7plus.com.au"
-    - "npc-live-sevennetwork.akamaized.net"
-    - "7plus-sevennetwork.akamaized.net"
-    - "seven.demdex.net"
-    - "cdn.7livecloud.io"
+    - 7plus.com.au
+    - npc-live-sevennetwork.akamaized.net
+    - 7plus-sevennetwork.akamaized.net
+    - seven.demdex.net
+    - cdn.7livecloud.io
   AU_9_now:
-    - "nine.com.au"
-    - "9now.com.au"
-    - "edge.api.brightcove.com"
-    - "p-9now.akamaized.net"
-    - "9now-livestreams.akamaized.net"
-    - "9cdn.net"
-    - "9nation.com.au"
-    - "9news.com.au"
-    - "freeviewplus.net.au"
-    - "mi9.com.au"
-    - "mi9cdn.com"
-    - "nineentertainment.com.au"
-    - "nineentertainmentco.com.au"
-    - "ninemediaroom.com.au"
-    - "ninemsn.com.au"
-    - "static9.net.au"
-    - "yourtv.com.au"
+    - nine.com.au
+    - 9now.com.au
+    - edge.api.brightcove.com
+    - p-9now.akamaized.net
+    - 9now-livestreams.akamaized.net
+    - 9cdn.net
+    - 9nation.com.au
+    - 9news.com.au
+    - freeviewplus.net.au
+    - mi9.com.au
+    - mi9cdn.com
+    - nineentertainment.com.au
+    - nineentertainmentco.com.au
+    - ninemediaroom.com.au
+    - ninemsn.com.au
+    - static9.net.au
+    - yourtv.com.au
   AU_10_play:
-    - "10play.com.au"
-    - "global.ssl.fastly.net"
-    - "airspace-cdn.cbsviedo.com"
-    - "net10-livestream-keys.play.cbsi.video"
-    - "net10-livestream.play.cbsi.video"
-    - "d25m2gzplgnf0.cloudfront.net"
+    - 10play.com.au
+    - global.ssl.fastly.net
+    - airspace-cdn.cbsviedo.com
+    - net10-livestream-keys.play.cbsi.video
+    - net10-livestream.play.cbsi.video
+    - d25m2gzplgnf0.cloudfront.net
   AU_ABC_iView:
-    - "iview.abc.net.au"
-    - "abc-iview-mediapackagestreams-2.akamaized.net"
+    - iview.abc.net.au
+    - abc-iview-mediapackagestreams-2.akamaized.net
   AU_Optus:
-    - "optus.com.au"
-    - "optusdigital.com"
-    - "optusnet.com.au"
-    - "optussport.tv"
-    - "optusvideo.tv"
-    - "tls1.yospace.com"
-    - "bln1.yospace.com"
-    - "d3rj5p7u4c4icq.cloudfront.net"
-    - "mgd0ee5iankkv3gidl14rm7c0.litix.io"
-    - "93e30b04-drm-widevine-licensing.axprod.net"
+    - optus.com.au
+    - optusdigital.com
+    - optusnet.com.au
+    - optussport.tv
+    - optusvideo.tv
+    - tls1.yospace.com
+    - bln1.yospace.com
+    - d3rj5p7u4c4icq.cloudfront.net
+    - mgd0ee5iankkv3gidl14rm7c0.litix.io
+    - 93e30b04-drm-widevine-licensing.axprod.net
   AU_SBS_on_Demand:
-    - "sbsod.com"
-    - "sbs.com.au"
-    - "videocdn-sbs.akamaized.net"
-    - "sbsvoddai-vh.akamaihd.net"
-    - "sbsvodns-vh.akamaihd.net"
-    - "sbs-live-dai.akamaized.net"
-    - "sbs-live.akamaized.net"
+    - sbsod.com
+    - sbs.com.au
+    - videocdn-sbs.akamaized.net
+    - sbsvoddai-vh.akamaihd.net
+    - sbsvodns-vh.akamaihd.net
+    - sbs-live-dai.akamaized.net
+    - sbs-live.akamaized.net
   NZ_Neon_TV:
-    - "neontv.co.nz"
+    - neontv.co.nz
   NZ_SkyGO_NZ:
-    - "sky.co.nz"
-    - "prod-skyonelive.akamaized.net"
-    - "skysportnow.co.nz"
-    - "imggaming.com"
-    - "pndsn.com"
+    - sky.co.nz
+    - prod-skyonelive.akamaized.net
+    - skysportnow.co.nz
+    - imggaming.com
+    - pndsn.com
   NZ_ThreeNow:
-    - "fullscreen.nz"
+    - fullscreen.nz
 
 AI_Platform:
   Openai:
@@ -765,6 +765,15 @@ AI_Platform:
   E-hentai:
     - exhentai.org
     - e-hentai.org
-  Claude 2:
+  Claude_2:
     - anthropic.com
     - claude.ai
+  Google_Gemini:
+    - gemini.google.com
+    - proactivebackend-pa.googleapis.com
+  Google_AiStudio:
+    - aistudio.google.com
+    - alkalimakersuite-pa.clients6.google.com
+    - generativelanguage.googleapis.com
+  Copilot:
+    - copilot.microsoft.com
