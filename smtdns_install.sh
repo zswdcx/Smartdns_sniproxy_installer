@@ -36,10 +36,11 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.5.3"
+SCRIPT_VERSION="V_2.5.5"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
+SNIPROXY_CONFIG="/etc/sniproxy.conf"
 
 # 检测脚本更新
 check_script_update() {
@@ -747,6 +748,112 @@ add_streaming_platform() {
 }
 
 
+# 添加流媒体域名到 /etc/sniproxy.conf
+add_streaming_to_sniproxy() {
+    local platform_name="$1"
+    local sub_platform_name="$2"
+    
+
+    # 检查 sniproxy 配置文件是否存在
+    if [[ ! -f "$SNIPROXY_CONFIG" ]]; then
+        echo -e "${RED}[错误] sniproxy 配置文件未找到：$SNIPROXY_CONFIG${RESET}"
+        return 1
+    fi
+
+    # 检查 StreamConfig.yaml 是否存在
+    if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
+        echo -e "${RED}[错误] 未找到 StreamConfig.yaml 文件：$STREAM_CONFIG_FILE${RESET}"
+        return 1
+    fi
+
+    # 如果提供了二级流媒体平台
+    if [[ -n "$sub_platform_name" ]]; then
+        echo -e "${CYAN}正在处理平台：$platform_name -> $sub_platform_name${RESET}"
+        local domains=$(yq ".$platform_name.$sub_platform_name[]" "$STREAM_CONFIG_FILE" 2>/dev/null | tr -d '"')
+        if [[ -z $domains ]]; then
+            echo -e "${YELLOW}未找到 $platform_name -> $sub_platform_name 的域名配置，跳过...${RESET}"
+            return
+        fi
+
+        # 遍历域名并添加到 sniproxy.conf
+        for domain in $domains; do
+            if grep -qF "$domain *" "$SNIPROXY_CONFIG"; then
+                echo -e "${YELLOW}跳过已存在的域名：$domain${RESET}"
+            else
+                echo "    .*${domain//./\\.} *" >>"$SNIPROXY_CONFIG"
+                echo -e "${GREEN}已添加域名：$domain${RESET}"
+            fi
+        done
+
+    # 如果仅提供一级流媒体平台
+    elif [[ -n "$platform_name" ]]; then
+        echo -e "${CYAN}正在处理一级平台：$platform_name${RESET}"
+        local sub_platforms=$(yq ".$platform_name | keys" "$STREAM_CONFIG_FILE" 2>/dev/null | jq -r '.[]')
+        if [[ -z $sub_platforms ]]; then
+            echo -e "${YELLOW}未找到 $platform_name 的二级平台配置，跳过...${RESET}"
+            return
+        fi
+
+        # 递归处理每个二级平台
+        for sub_platform in $sub_platforms; do
+            add_streaming_to_sniproxy "$platform_name" "$sub_platform"
+        done
+    else
+        echo -e "${RED}错误：未指定有效的平台名称！${RESET}"
+        return 1
+    fi
+}
+
+# 用户选择添加流媒体域名到 sniproxy
+add_streaming_domains_to_sniproxy() {
+    echo -e "${CYAN}请选择操作：${RESET}"
+    echo -e "${YELLOW}1.${RESET} 添加一个流媒体平台"
+    echo -e "${YELLOW}2.${RESET} 添加一个区域内的所有流媒体平台"
+    read -r choice
+
+    case $choice in
+    1)
+        echo -e "${CYAN}请输入一级流媒体平台序号：${RESET}"
+        yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl
+        read -r platform_index
+
+        local platform_name=$(yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r ".[$((platform_index - 1))]")
+        if [[ -z $platform_name ]]; then
+            echo -e "${RED}无效的序号，请重新输入！${RESET}"
+            return
+        fi
+
+        echo -e "${CYAN}您选择的一级平台是：${GREEN}$platform_name${RESET}"
+        echo -e "${CYAN}请输入二级流媒体平台序号：${RESET}"
+        yq ".$platform_name | keys" "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl
+        read -r sub_platform_index
+
+        local sub_platform_name=$(yq ".$platform_name | keys" "$STREAM_CONFIG_FILE" | jq -r ".[$((sub_platform_index - 1))]")
+        if [[ -z $sub_platform_name ]]; then
+            echo -e "${RED}无效的序号，请重新输入！${RESET}"
+            return
+        fi
+
+        add_streaming_to_sniproxy "$platform_name" "$sub_platform_name"
+        ;;
+    2)
+        echo -e "${CYAN}请输入一级流媒体平台序号：${RESET}"
+        yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl
+        read -r platform_index
+
+        local platform_name=$(yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r ".[$((platform_index - 1))]")
+        if [[ -z $platform_name ]]; then
+            echo -e "${RED}无效的序号，请重新输入！${RESET}"
+            return
+        fi
+
+        add_streaming_to_sniproxy "$platform_name"
+        ;;
+    *)
+        echo -e "${RED}无效选择，请重新输入！${RESET}"
+        ;;
+    esac
+}
 
 # 主功能菜单
 while true; do
@@ -761,6 +868,8 @@ while true; do
     echo -e "${CYAN}8.${RESET} ${GREEN} 添加一个地区流媒体到 SmartDNS${RESET}"
     echo -e "${CYAN}9.${RESET} ${GREEN} 添加所有流媒体平台到 SmartDNS${RESET}"
     echo -e "${CYAN}10.${RESET} ${GREEN} 查看已经添加的流媒体${RESET}"
+
+    echo -e "${CYAN}11.${RESET} ${GREEN} 添加流媒体平台到 sniproxy${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
     echo -e "${CYAN}21.${RESET} ${GREEN}启动/重启 SmartDNS 服务并开机自启${RESET}"
     echo -e "${CYAN}22.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
@@ -817,6 +926,9 @@ while true; do
         ;;
     10)
         view_added_platforms
+        ;;
+    11)
+        add_streaming_domains_to_sniproxy
         ;;
     21)
         start_smartdns
