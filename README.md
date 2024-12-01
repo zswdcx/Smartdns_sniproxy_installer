@@ -25,11 +25,11 @@ smartdns：一个DNS服务器，用来分流DNS域名是否走sniproxy代理
 1. 让一台vps同时解锁多个地区的流媒体（美国、新加坡、日本、香港）
 2. 实现使用一个节点，同时解锁香港b站，美国油管，新加坡网飞以及日本HBO等
 
-![解锁效果](./Unlock_image.png)
+![效果图](Unlock_image.png)
 
 
 
-### 参考项目
+## 参考项目
 
 1. https://github.com/myxuchangbin/dnsmasq_sniproxy_install
 2. https://github.com/bingotl/dns_unlock
@@ -44,6 +44,10 @@ smartdns：一个DNS服务器，用来分流DNS域名是否走sniproxy代理
 2. 快速添加您想解锁的地区，一键配置，一键修改，不用再使用复杂的编辑功能
 3. 快速配置您想添加的解锁机服务器，方便修改
 4. 解锁机哪怕宕机也不影响被解锁机正常使用
+
+
+
+------
 
 
 
@@ -65,6 +69,8 @@ bash smtdns_install.sh
 
 
 
+------
+
 
 
 ## 阅读顺序
@@ -74,6 +80,8 @@ bash smtdns_install.sh
 > 如果您有自己的解锁机，可以先阅读“解锁机”篇章，配置自己的解锁机，随后使用`address`添加DNS服务器。
 
 
+
+-------
 
 
 
@@ -150,6 +158,8 @@ sniproxy 开机自启：未启用
 
 
 
+------
+
 
 
 ## 解锁机
@@ -196,6 +206,8 @@ sniproxy 开机自启：已启用
 
 
 
+
+------
 
 
 
