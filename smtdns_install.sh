@@ -36,7 +36,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.5.6"
+SCRIPT_VERSION="V_2.5.7"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -445,18 +445,18 @@ restore_system_dns() {
     echo -e "${GREEN}sniproxy 服务已启动并设置为开机启动。${RESET}"
 }
 
-# 停止系统 DNS 服务
-stop_system_dns() {
-    stop_service "systemd-resolved"
-    echo -e "${GREEN}系统 DNS 服务已停止并关闭开机自启。${RESET}"
-}
-
 # 恢复 SmartDNS 服务
 start_smartdns() {
     stop_service "systemd-resolved"
     restore_service "smartdns"
     motify_resolv "127.0.0.1"
     echo -e "${GREEN}SmartDNS 服务已启动并设置为开机启动！${RESET}"
+}
+
+# 停止系统 DNS 服务
+stop_system_dns() {
+    stop_service "systemd-resolved"
+    echo -e "${GREEN}系统 DNS 服务已停止并关闭开机自启。${RESET}"
 }
 
 # 停止 SmartDNS 服务
@@ -894,6 +894,8 @@ while true; do
     echo -e "${YELLOW}-------------------------${RESET}"
     echo -e "${CYAN}11.${RESET} ${GREEN} 安装并启动 sniproxy${RESET}"
     echo -e "${CYAN}12.${RESET} ${GREEN} 添加流媒体平台到 sniproxy${RESET}"
+    echo -e "${CYAN}13.${RESET} ${GREEN} 启动/重启 sniproxy 服务并开机自启${RESET}"
+    echo -e "${CYAN}14.${RESET} ${GREEN} 停止 sniproxy 并关闭开机自启${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
     echo -e "${CYAN}21.${RESET} ${GREEN}启动/重启 SmartDNS 服务并开机自启${RESET}"
     echo -e "${CYAN}22.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
@@ -955,11 +957,14 @@ while true; do
         wget --no-check-certificate -O dnsmasq_sniproxy.sh https://raw.githubusercontent.com/myxuchangbin/dnsmasq_sniproxy_install/master/dnsmasq_sniproxy.sh && bash dnsmasq_sniproxy.sh -fs
         ;;
     12)
-        stop_sniproxy
-        ;;
-    13)
         add_streaming_domains_to_sniproxy
         systemctl restart sniproxy
+        ;;
+    13)
+        restore_system_dns
+        ;;
+    14)
+        stop_sniproxy
         ;;
     21)
         start_smartdns
