@@ -28,7 +28,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.5.1"
+SCRIPT_VERSION="V_2.5.2"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -549,6 +549,83 @@ check_files() {
     fi
 }
 
+
+# 添加一级流媒体组内所有二级键
+add_all_nested_streaming_platforms() {
+    check_files
+
+    echo -e "${CYAN}请输入一级流媒体平台序号：${RESET}"
+    yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r '.[]' | nl || echo -e "${YELLOW}暂无可用的流媒体平台配置。${RESET}"
+    read -r platform_index
+
+    platform_name=$(yq '. | keys' "$STREAM_CONFIG_FILE" | jq -r ".[$((platform_index - 1))]")
+    if [[ -z $platform_name ]]; then
+        echo -e "${RED}无效的序号，请重新输入！${RESET}"
+        return
+    fi
+
+    echo -e "${CYAN}您选择的一级平台是：${GREEN}$platform_name${RESET}"
+
+    # 检查二级键是否存在
+    sub_platforms=$(yq ".$platform_name | keys" "$STREAM_CONFIG_FILE" | jq -r '.[]')
+    if [[ -z $sub_platforms ]]; then
+        echo -e "${YELLOW}该流媒体组暂无配置的二级流媒体。${RESET}"
+        return
+    fi
+
+    echo -e "${CYAN}请选择添加方式：${RESET}"
+    echo -e "${YELLOW}1. nameserver方式${RESET}"
+    echo -e "${YELLOW}2. address方式${RESET}"
+    read -r add_method
+
+    case $add_method in
+    1)
+        view_upstream_dns_groups
+
+        echo -e "${CYAN}请输入已存在的 DNS 组名称（例如：us）：${RESET}"
+        read -r group_name
+        if ! grep -q " -group $group_name" "$CONFIG_FILE"; then
+            echo -e "${RED}指定的 DNS 组不存在！请先创建组。${RESET}"
+            return
+        fi
+
+        for nested_name in $sub_platforms; do
+            domains=$(yq ".$platform_name.$nested_name[]" "$STREAM_CONFIG_FILE" | tr -d '"')
+            if [[ -z $domains ]]; then
+                echo -e "${YELLOW}跳过无域名配置的二级平台：$nested_name${RESET}"
+                continue
+            fi
+            echo -e "${CYAN}正在为 $nested_name 添加域名规则...${RESET}"
+            add_domain_rules "nameserver" "$domains" "$group_name" "$nested_name"
+        done
+        echo -e "${GREEN}已为 $platform_name 内所有二级流媒体添加 nameserver 方式。${RESET}"
+        ;;
+    2)
+        echo -e "${CYAN}请输入 DNS 服务器的 IP 地址（例如：11.22.33.44）：${RESET}"
+        read -r dns_ip
+        if [[ ! $dns_ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo -e "${RED}无效的 IP 地址，请重新输入！${RESET}"
+            return
+        fi
+
+        for nested_name in $sub_platforms; do
+            domains=$(yq ".$platform_name.$nested_name[]" "$STREAM_CONFIG_FILE" | tr -d '"')
+            if [[ -z $domains ]]; then
+                echo -e "${YELLOW}跳过无域名配置的二级平台：$nested_name${RESET}"
+                continue
+            fi
+            echo -e "${CYAN}正在为 $nested_name 添加域名规则...${RESET}"
+            add_domain_rules "address" "$domains" "$dns_ip" "$nested_name"
+        done
+        echo -e "${GREEN}已为 $platform_name 内所有二级流媒体添加 address 方式。${RESET}"
+        ;;
+    *)
+        echo -e "${RED}无效选择，请重新输入！${RESET}"
+        ;;
+    esac
+}
+
+
 # 添加流媒体平台到 SmartDNS
 add_streaming_platform() {
     check_files
@@ -641,6 +718,8 @@ while true; do
     echo -e "${CYAN}7.${RESET} ${GREEN} 添加流媒体平台到 SmartDNS${RESET}"
     echo -e "${CYAN}8.${RESET} ${GREEN} 查看已经添加的流媒体${RESET}"
     echo -e "${CYAN}9.${RESET} ${GREEN} 一键添加所有流媒体平台${RESET}"
+    echo -e "${CYAN}10.${RESET} ${GREEN} 添加一级组内所有二级流媒体到 SmartDNS${RESET}"
+
     echo -e "${YELLOW}-------------------------${RESET}"
     echo -e "${CYAN}21.${RESET} ${GREEN}启动/重启 SmartDNS 服务并开机自启${RESET}"
     echo -e "${CYAN}22.${RESET} ${GREEN}停止 SmartDNS 并关闭开机自启${RESET}"
@@ -688,6 +767,10 @@ while true; do
         ;;
     9)
         add_all_streaming_platforms
+        start_smartdns
+        ;;
+    10)
+        add_all_nested_streaming_platforms
         start_smartdns
         ;;
     21)
