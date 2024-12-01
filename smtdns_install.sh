@@ -36,7 +36,7 @@ REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smar
 
 
 # 脚本版本和更新时间
-SCRIPT_VERSION="V_2.5.7"
+SCRIPT_VERSION="V_2.5.8"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 STREAM_CONFIG_FILE="./StreamConfig.yaml"
 CONFIG_FILE="/etc/smartdns/smartdns.conf"
@@ -440,7 +440,7 @@ restore_system_dns() {
 }
 
 # 恢复Sniproxy 服务
-restore_system_dns() {
+restore_sniproxy() {
     restore_service "sniproxy"
     echo -e "${GREEN}sniproxy 服务已启动并设置为开机启动。${RESET}"
 }
@@ -961,7 +961,7 @@ while true; do
         systemctl restart sniproxy
         ;;
     13)
-        restore_system_dns
+        restore_sniproxy
         ;;
     14)
         stop_sniproxy
