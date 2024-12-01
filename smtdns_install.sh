@@ -37,7 +37,7 @@ REMOTE_DNSMASQ_SNIPROXY_URL=https://raw.githubusercontent.com/myxuchangbin/dnsma
 REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz"
 REMOTE_RegionRestrictionCheck_URL=https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh
 # 脚本信息
-SCRIPT_VERSION="V_2.7.0"
+SCRIPT_VERSION="V_2.7.1"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 STREAM_CONFIG_FILE="$SCRIPT_DIR/StreamConfig.yaml"
@@ -319,7 +319,8 @@ add_domain_rules() {
     local platform_name="$4" # platform name
 
     # 添加注释
-    echo "#> $platform_name" >>"$SMART_CONFIG_FILE"
+    # 格式 #> 网飞 us
+    echo "#> $platform_name ${identifier}" >>"$SMART_CONFIG_FILE"
     if [[ "$method" == "nameserver" ]]; then
         while IFS= read -r domain; do
             echo "nameserver /$domain/$identifier" >>"$SMART_CONFIG_FILE"
