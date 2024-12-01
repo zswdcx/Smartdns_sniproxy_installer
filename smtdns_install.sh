@@ -37,7 +37,7 @@ REMOTE_DNSMASQ_SNIPROXY_URL=https://raw.githubusercontent.com/myxuchangbin/dnsma
 REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz"
 REMOTE_RegionRestrictionCheck_URL=https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh
 # 脚本信息
-SCRIPT_VERSION="V_2.6.5"
+SCRIPT_VERSION="V_2.6.6"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 STREAM_CONFIG_FILE="$SCRIPT_DIR/StreamConfig.yaml"
@@ -587,6 +587,16 @@ add_all_streaming_platforms() {
     esac
 }
 
+download_Stream_Config_File() {
+    log_CYAN "正在下载流媒体配置配置文件..."
+    wget -q "$REMOTE_STREAM_CONFIG_FILE_URL" -O "$STREAM_CONFIG_FILE"
+    if [[ $? -eq 0 ]]; then
+        log_GREEN "默认流媒体配置文件已下载。"
+    else
+        log_RED "下载流媒体配置文件失败，请检查网络连接。"
+        exit 1
+    fi
+}
 
 # File Existence Check
 check_files() {
@@ -598,14 +608,7 @@ check_files() {
 
     if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
         log_RED "未找到流媒体配置文件：$STREAM_CONFIG_FILE"
-        log_CYAN "正在下载默认配置文件..."
-        wget -q "$REMOTE_STREAM_CONFIG_FILE_URL" -O "$STREAM_CONFIG_FILE"
-        if [[ $? -eq 0 ]]; then
-            log_GREEN "默认流媒体配置文件已下载。"
-        else
-            log_RED "下载流媒体配置文件失败，请检查网络连接。"
-            exit 1
-        fi
+        download_Stream_Config_File
     fi
 }
 
@@ -1020,6 +1023,7 @@ while true; do
     echo -e "${YELLOW}-----------脚本相关--------------${RESET}"
     echo -e "${CYAN}t.${RESET} ${GREEN}流媒体检测${RESET}"
     echo -e "${CYAN}u.${RESET} ${GREEN}检测脚本更新${RESET}"
+    echo -e "${CYAN}d.${RESET} ${GREEN}下载最新版本流媒体列表文件${RESET}"
     echo -e "${CYAN}q.${RESET} ${RED}退出脚本${RESET}"
     echo -e "${YELLOW}-------------------------${RESET}"
 
@@ -1110,6 +1114,10 @@ while true; do
         ;;
     u)
         check_script_update
+        ;;
+    d)
+        rm StreamConfig.yaml
+        download_Stream_Config_File
         ;;
     q)
         echo -e "${RED}退出脚本...${RESET}"
