@@ -37,7 +37,7 @@ REMOTE_DNSMASQ_SNIPROXY_URL=https://raw.githubusercontent.com/myxuchangbin/dnsma
 REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz"
 REMOTE_RegionRestrictionCheck_URL=https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh
 # 脚本信息
-SCRIPT_VERSION="V_2.7.1"
+SCRIPT_VERSION="V_2.7.2"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 STREAM_CONFIG_FILE="$SCRIPT_DIR/StreamConfig.yaml"
@@ -95,15 +95,43 @@ check_tools() {
     done
 
     if ! command -v yq &>/dev/null; then
-        echo -e "${RED}yq 未安装，尝试通过 pip 安装...${RESET}"
-        sudo apt install -y python3-pip
-        pip3 install yq
+        echo -e "${RED}yq 未安装，尝试通过 apt 安装...${RESET}"
+        sudo apt update && sudo apt install -y yq
         if ! command -v yq &>/dev/null; then
-            echo -e "${RED}yq 安装失败，请手动检查！${RESET}"
-            exit 1
+            echo -e "${RED}apt 安装 yq 失败，尝试添加源并安装...${RESET}"
+            sudo add-apt-repository ppa:rmescandon/yq -y
+            sudo apt update && sudo apt install -y yq
+            if ! command -v yq &>/dev/null; then
+                echo -e "${RED}通过 PPA 安装 yq 失败，尝试下载预编译文件...${RESET}"
+                local arch=$(uname -m)
+                local yq_url=""
+                if [[ "$arch" == "x86_64" ]]; then
+                    yq_url="https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_linux_amd64"
+                elif [[ "$arch" == "aarch64" ]]; then
+                    yq_url="https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_linux_arm64"
+                elif [[ "$arch" == "arm" ]]; then
+                    yq_url="https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_linux_arm"
+                else
+                    echo -e "${RED}未支持的系统架构：$arch，请手动安装 yq！ https://github.com/mikefarah/yq/releases${RESET}"
+                    exit 1
+                fi
+                wget -q "$yq_url" -O /usr/local/bin/yq
+                chmod +x /usr/local/bin/yq
+                if ! command -v yq &>/dev/null; then
+                    echo -e "${RED}下载和安装 yq 失败，请手动检查！${RESET}"
+                    exit 1
+                else
+                    echo -e "${GREEN}成功通过下载预编译文件安装 yq！${RESET}"
+                fi
+            else
+                echo -e "${GREEN}成功通过 PPA 安装 yq！${RESET}"
+            fi
+        else
+            echo -e "${GREEN}成功通过 apt 安装 yq！${RESET}"
         fi
     fi
 }
+
 
 check_tools
 
