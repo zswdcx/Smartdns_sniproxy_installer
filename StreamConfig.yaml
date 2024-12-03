@@ -11,6 +11,15 @@ Global_Platform:
   Hotstar:
     - hotstar.com
     - hotstarext.com
+  HBO_Max:
+    - max.com
+    - hbo.com
+    - hbogo.com
+    - hbomax.com
+    - hbomaxcdn.com
+    - hbonow.com
+    - maxgo.com
+    - discomax.com
   DisneyPlus:
     - disney.connections.edge.bamgrid.com
     - disney.api.edge.bamgrid.com
@@ -242,14 +251,6 @@ Europe_Media:
     - skyshowtime.com
     - cssott.com
     - 4ac1dd56e493354be504f063e4ae3440a13c6776.cws.conviva.com
-  HBO_Max:
-    - max.com
-    - cinemax.com
-    - forthethrone.com
-    - hbo.com
-    - hbomax.com
-    - hbomaxcdn.com
-    - maxgo.com
   EuroSport:
     - europe-fastly-mediashield-live-prod.cdn.h264.io
     - akamai.prod-live.h264.io
@@ -523,15 +524,6 @@ North_America_Media:
     - fxnow.fxnetworks.com
   TLC_GO:
     - geolocation.onetrust.com
-  HBO_Max:
-    - max.com
-    - hbo.com
-    - hbogo.com
-    - hbomax.com
-    - hbomaxcdn.com
-    - hbonow.com
-    - maxgo.com
-    - discomax.com
   Shudder:
     - shudder.com
   BritBox:
