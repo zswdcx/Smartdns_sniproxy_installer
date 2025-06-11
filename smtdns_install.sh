@@ -562,6 +562,19 @@ check_files() {
     fi
 }
 
+check_files_sniproxy() {
+    if [[ ! -f "$SNIPROXY_CONFIG" ]]; then
+        log_RED "未找到 sniproxy 配置文件：$SNIPROXY_CONFIG"
+        log_CYAN "请确保 sniproxy 已安装。"
+        exit 1
+    fi
+
+    if [[ ! -f "$STREAM_CONFIG_FILE" ]]; then
+        log_RED "未找到流媒体配置文件：$STREAM_CONFIG_FILE"
+        download_Stream_Config_File
+    fi
+}
+
 
 # 添加所有流媒体平台
 add_all_streaming_platforms() {
@@ -865,7 +878,7 @@ add_streaming_to_sniproxy() {
 # 用户选择添加流媒体域名到 sniproxy
 add_streaming_domains_to_sniproxy() {
     
-    check_files
+    check_files_sniproxy
 
     echo -e "${CYAN}请选择操作：${RESET}"
     echo -e "${YELLOW}1.${RESET} 添加一个流媒体平台"
