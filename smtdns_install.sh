@@ -8,6 +8,9 @@ RED="\033[1;31m"
 YELLOW="\033[1;33m"
 CYAN="\033[1;36m"
 
+#smartdns version
+SMARTDNS_VER='smartdns.1.2025.03.02-1533'
+
 # Helper Functions
 log_GREEN() {
     echo -e "${GREEN}$1${RESET}"
@@ -30,19 +33,36 @@ log_CYAN() {
 }
 
 # SmartDNS 一键安装和配置脚本
-# 请确保使用 sudo 或 root 权限运行此脚本
-REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/smtdns_install.sh"
-REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/StreamConfig.yaml"
+# 请确保使用 root 权限运行此脚本
+REMOTE_SCRIPT_URL="https://raw.githubusercontent.com/zswdcx/Smartdns_sniproxy_installer/refs/heads/main/smtdns_install.sh"
+REMOTE_STREAM_CONFIG_FILE_URL="https://raw.githubusercontent.com/zswdcx/Smartdns_sniproxy_installer/refs/heads/main/StreamConfig.yaml"
 REMOTE_DNSMASQ_SNIPROXY_URL=https://raw.githubusercontent.com/myxuchangbin/dnsmasq_sniproxy_install/master/dnsmasq_sniproxy.sh
-REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46/smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz"
+REMOTE_SMARTDNS_URL="https://github.com/pymumu/smartdns/releases/download/Release46.1/${SMARTDNS_VER}.${OS_ARCH}-linux-all.tar.gz"
 REMOTE_RegionRestrictionCheck_URL=https://raw.githubusercontent.com/1-stream/RegionRestrictionCheck/main/check.sh
 # 脚本信息
-SCRIPT_VERSION="V_2.7.1"
+SCRIPT_VERSION="V_2.7.2"
 LAST_UPDATED=$(date +"%Y-%m-%d")
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 STREAM_CONFIG_FILE="$SCRIPT_DIR/StreamConfig.yaml"
 SMART_CONFIG_FILE="/etc/smartdns/smartdns.conf"
 SNIPROXY_CONFIG="/etc/sniproxy.conf"
+
+#arch check
+arch_check() {
+    echo -e "检测当前系统架构中..."
+    OS_ARCH=$(arch)
+    echo -e "当前系统架构为 ${OS_ARCH}"
+
+    if [[ ${OS_ARCH} == "x86_64" || ${OS_ARCH} == "x64" || ${OS_ARCH} == "amd64" ]]; then
+        OS_ARCH="x86_64"
+    elif [[ ${OS_ARCH} == "aarch64" || ${OS_ARCH} == "arm64" ]]; then
+        OS_ARCH="aarch64"
+    else
+        OS_ARCH="x86"
+        echo -e "检测系统架构失败，使用默认架构: ${OS_ARCH}"
+    fi
+    echo -e "系统架构检测完毕,当前系统架构为:${OS_ARCH}"
+}
 
 # 检测脚本更新
 check_script_update() {
@@ -90,14 +110,13 @@ check_tools() {
     for tool in curl jq; do
         if ! command -v $tool &>/dev/null; then
             echo -e "${RED}$tool 未安装，正在安装...${RESET}"
-            sudo apt-get update && sudo apt-get install -y $tool
+            apt-get update && apt-get install -y $tool
         fi
     done
 
     if ! command -v yq &>/dev/null; then
-        echo -e "${RED}yq 未安装，尝试通过 pip 安装...${RESET}"
-        sudo apt install -y python3-pip
-        pip3 install yq
+        echo -e "${RED}yq 未安装，尝试通过 apt 安装...${RESET}"
+        apt-get install -y yq
         if ! command -v yq &>/dev/null; then
             echo -e "${RED}yq 安装失败，请手动检查！${RESET}"
             exit 1
@@ -144,7 +163,7 @@ install_smartdns() {
     
     stop_system_dns
 
-    tar zxf smartdns.1.2024.06.12-2222.x86-linux-all.tar.gz
+    tar zxf ${SMARTDNS_VER}.${OS_ARCH}-linux-all.tar.gz
     cd smartdns || exit 1
 
     chmod +x ./install
@@ -904,10 +923,10 @@ check_and_enable_ufw() {
         log_YELLOW "未检测到 UFW 防火墙。是否安装 UFW？(y/N):"
         read -r install_ufw
         if [[ "$install_ufw" =~ ^[Yy]$ ]]; then
-            sudo apt-get update
-            sudo apt-get install -y ufw
+            apt-get update
+            apt-get install -y ufw
             log_YELLOW "确保已开放 SSH 的 22 端口，否则可能无法远程访问！正在开放端口 22..."
-            sudo ufw allow 22
+            ufw allow 22
             log_GREEN "已成功开放 22 端口。"
         else
             log_RED "UFW 未安装，无法继续操作。"
@@ -915,14 +934,14 @@ check_and_enable_ufw() {
         fi
     fi
 
-    if ! sudo ufw status | grep -q "active"; then
+    if ! ufw status | grep -q "active"; then
         log_YELLOW "UFW 未启动。是否启动 UFW？(y/N):"
         read -r start_ufw
         if [[ "$start_ufw" =~ ^[Yy]$ ]]; then
-            sudo ufw enable
+            ufw enable
             log_GREEN "UFW 已成功启动！"
             log_YELLOW "确保已开放 SSH 的 22 端口，否则可能无法远程访问！正在开放端口 22..."
-            sudo ufw allow 22
+            ufw allow 22
             log_GREEN "已成功开放 22 端口。"
         else
             log_RED "UFW 未启动，无法继续操作。"
@@ -942,11 +961,11 @@ unlock_ports() {
         return
     fi
     # 放开 80/443/53 端口
-    sudo ufw allow from "$unlocked_ip" to any port 80 proto tcp
-    sudo ufw allow from "$unlocked_ip" to any port 80 proto udp
-    sudo ufw allow from "$unlocked_ip" to any port 443 proto tcp
-    sudo ufw allow from "$unlocked_ip" to any port 443 proto udp
-    sudo ufw allow from "$unlocked_ip" to any port 53 proto udp
+    ufw allow from "$unlocked_ip" to any port 80 proto tcp
+    ufw allow from "$unlocked_ip" to any port 80 proto udp
+    ufw allow from "$unlocked_ip" to any port 443 proto tcp
+    ufw allow from "$unlocked_ip" to any port 443 proto udp
+    ufw allow from "$unlocked_ip" to any port 53 proto udp
 
     log_GREEN "已成功为 $unlocked_ip 开放以下端口：80、443、53（tcp & udp）"
     
@@ -963,11 +982,11 @@ open_custom_port() {
         return
     fi
 
-    sudo ufw allow "$custom_port"/tcp
-    sudo ufw allow "$custom_port"/udp
+    ufw allow "$custom_port"/tcp
+    ufw allow "$custom_port"/udp
     log_GREEN "已成功开放端口 $custom_port（TCP 和 UDP）。"
     log_GREEN "ufw放开端口命令如下:"
-    log_YELLOW "sudo ufw allow from xx.xx.xx.xx to any port 53 proto udp"
+    log_YELLOW "ufw allow from xx.xx.xx.xx to any port 53 proto udp"
 }
 
 # 修改全局 DNS 函数
@@ -1026,6 +1045,7 @@ while true; do
     echo -e "${CYAN}q.${RESET} ${RED}退出脚本${RESET}"
     echo -e "${YELLOW}---服务运行状态(SmartDNS 与 系统DNS不同时运行)---${RESET}"
 
+    arch_check
     check_smartdns_status
     check_system_dns_status
     check_sniproxy_status

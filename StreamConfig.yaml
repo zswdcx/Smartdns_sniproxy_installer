@@ -75,25 +75,8 @@ Global_Platform:
     - d3o7oi00quuwqu.cloudfront.net
     - mobileanalytics.us-east-1.amazonaws.com
     - viu.com
-  Steam_Store:
-    - steampowered.com
-  YouTube:
-    - youtube.com
-    - youtubei.googleapis.com
-  Google_Search:
-    - google.com
   Instagram:
     - instagram.com
-  iQiyi:
-    - 71.am
-    - iq.com
-    - iqiyi.com
-    - iqiyipic.com
-    - pps.tv
-    - ppsimg.com
-    - qiyi.com
-    - qiyipic.com
-    - qy.net
   Tiktok:
     - byteoversea.com
     - ibytedtos.com
@@ -118,6 +101,9 @@ Global_Platform:
     - spotifycodes.com
     - spotifyforbrands.com
     - spotifyjobs.com
+  E-hentai:
+    - exhentai.org
+    - e-hentai.org
 
 Taiwan_Media:
   KKTV:
@@ -768,10 +754,7 @@ AI_Platform:
     - chatgpt.com
     - oaistatic.com
     - oaiusercontent.com
-  E-hentai:
-    - exhentai.org
-    - e-hentai.org
-  Claude_2:
+  Claude:
     - anthropic.com
     - claude.ai
   Google_Gemini:
@@ -781,5 +764,8 @@ AI_Platform:
     - aistudio.google.com
     - alkalimakersuite-pa.clients6.google.com
     - generativelanguage.googleapis.com
+  Google_NotebookLM:
+    - notebooklm.google
+    - notebooklm.google.com
   Copilot:
     - copilot.microsoft.com

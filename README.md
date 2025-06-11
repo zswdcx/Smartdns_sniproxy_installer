@@ -56,7 +56,7 @@ smartdns：一个DNS服务器，用来分流DNS域名是否走sniproxy代理
 ### 脚本下载
 
 ```sh
-wget https://raw.githubusercontent.com/lthero-big/Smartdns_sniproxy_installer/refs/heads/main/smtdns_install.sh -O smtdns_install.sh 
+wget https://raw.githubusercontent.com/zswdcx/Smartdns_sniproxy_installer/refs/heads/main/smtdns_install.sh -O smtdns_install.sh 
 ```
 
 脚本将保存在本地 ，命名为smtdns_install.sh ，您可以随时执行
